@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include "Entities/Boy.hpp"
 
 // --- CONFIGURATION ---
 // Define time per frame for a 60 FPS target
@@ -11,7 +12,10 @@ int main()
 	sf::RenderWindow window(sf::VideoMode({ 1280, 720 }), "Retro Boy");
 	window.setFramerateLimit(60);
 
-	// 2. Clock for tracking time
+	// 2. Create game entities
+	Boy retroBoy;
+
+	// 3. Clock for tracking time
 	sf::Clock clock;
 	sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
@@ -34,13 +38,14 @@ int main()
 		{
 			// Here would go the physics update code, using TIME_PER_FRAME as delta time
 			timeSinceLastUpdate -= TIME_PER_FRAME;
+
+			retroBoy.update(TIME_PER_FRAME.asSeconds());
 		}
 		
 		// D. RENDERING
 		window.clear(sf::Color::Black);
 
-		// Here would go the rendering code
-		// player.draw(window);
+		retroBoy.render(window);
 
 		window.display();
 	}
