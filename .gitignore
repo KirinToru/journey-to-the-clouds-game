@@ -43,6 +43,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.cmake
+*.cache
 !CMakeLists.txt
 
 # ==============================================================================
