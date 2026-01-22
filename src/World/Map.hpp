@@ -4,7 +4,7 @@
 
 class Map {
 public:
-  // Tile size: 40px (Same as player for now)
+  // Tile size: 40px
   static constexpr float TILE_SIZE = 40.f;
 
   Map();

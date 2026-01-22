@@ -7,8 +7,8 @@ Boy::Boy() {
   shape.setPosition({100.f, 0.f}); // Start position
 
   // Physics parameters
-  moveSpeed = 400.f;
-  gravity = 1500.f;
+  moveSpeed = 300.f; // Slower overall speed
+  gravity = 1200.f;  // Lower base gravity for "floaty" hang time
   jumpStrength = 600.f;
 
   velocity = {0.f, 0.f};
@@ -34,15 +34,26 @@ void Boy::update(float dt, const Map &map) {
   }
 
   // 3. Jump
-  if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-       sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) &&
-      isGrounded) {
+  bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+
+  if (jumpPressed && isGrounded) {
     velocity.y = -jumpStrength;
     isGrounded = false;
   }
 
-  // 4. Constant Forces
-  velocity.y += gravity * dt;
+  // 4. Variable Gravity (Dynamic Acceleration)
+  float currentGravity = gravity;
+
+  if (velocity.y < 0.f && !jumpPressed) {
+    // Rising but button released: heavier gravity (shorter jump)
+    currentGravity *= 2.0f;
+  } else if (velocity.y > 0.f) {
+    // Falling: heavier gravity (fast fall)
+    currentGravity *= 2.5f;
+  }
+
+  velocity.y += currentGravity * dt;
 
   // 5. Physics & Collision Resolution
 

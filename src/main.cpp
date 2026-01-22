@@ -14,7 +14,7 @@ int main() {
   // 2. Create game entities
   Map map;
   // map.loadDemoMap(); // REMOVED
-  map.loadFromFile("assets/levels/level1.txt");
+  map.loadFromFile("assets/levels/testX.txt");
 
   Boy retroBoy;
   // Start position from Map
@@ -37,6 +37,15 @@ int main() {
     while (const std::optional event = window.pollEvent()) {
       if (event->is<sf::Event::Closed>())
         window.close();
+
+      // Handle Resizing
+      if (const auto *resized = event->getIf<sf::Event::Resized>()) {
+        sf::Vector2f newSize(static_cast<float>(resized->size.x),
+                             static_cast<float>(resized->size.y));
+
+        // Update Camera view to match window size
+        camera.setSize(newSize);
+      }
 
       // Restart input
       if (const auto *keyPress = event->getIf<sf::Event::KeyPressed>()) {
@@ -64,8 +73,7 @@ int main() {
     sf::Vector2f viewSize = camera.getSize();
     float camX, camY;
 
-    // CENTER MAP X: If map is smaller than view, center coordinate is MapWidth
-    // / 2. SCROLL X: Else, clamp camera to player, keeping within map bounds.
+    // CENTER MAP X
     float mapW = map.getWidth();
     if (mapW < viewSize.x) {
       camX = mapW / 2.f;
@@ -74,7 +82,7 @@ int main() {
       camX = std::min(camX, mapW - viewSize.x / 2.f);
     }
 
-    // CENTER MAP Y: Similar logic
+    // CENTER MAP Y
     float mapH = map.getHeight();
     if (mapH < viewSize.y) {
       camY = mapH / 2.f;
@@ -87,8 +95,7 @@ int main() {
     window.setView(camera);
 
     // D. RENDERING
-    window.clear(
-        sf::Color::White); // Changed background to White to see voids better
+    window.clear(sf::Color::White);
 
     map.render(window);
     retroBoy.render(window);

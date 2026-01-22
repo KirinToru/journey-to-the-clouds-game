@@ -20,4 +20,7 @@ target_link_libraries(RetroBoy
 add_custom_command(TARGET RetroBoy POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/dll"
-    "$<TARGET_FILE_DIR:RetroBoy>")
+    "$<TARGET_FILE_DIR:RetroBoy>"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:RetroBoy>/assets")
