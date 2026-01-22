@@ -7,6 +7,7 @@ include_directories(${SFML_DIR}/include)
 link_directories(${SFML_DIR}/lib)
 set(SOURCES
     "src/main.cpp"
+    "src/Game.cpp"
     "src/Entities/Boy.cpp"
     "src/World/Map.cpp"
 )

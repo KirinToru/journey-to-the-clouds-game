@@ -10,7 +10,7 @@ public:
   Map();
 
   // Loads map from a CSV text file
-  void loadFromFile(const std::string &filename);
+  bool loadFromFile(const std::string &filename);
 
   // Getters for map dimensions (in pixels)
   float getWidth() const {

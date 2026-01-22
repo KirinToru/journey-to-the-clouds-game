@@ -7,9 +7,18 @@ Boy::Boy() {
   shape.setPosition({100.f, 0.f}); // Start position
 
   // Physics parameters
-  moveSpeed = 300.f; // Slower overall speed
-  gravity = 1200.f;  // Lower base gravity for "floaty" hang time
+  moveSpeed = 300.f;
+  acceleration = 2000.f;
+  friction = 1000.f;
+
+  gravity = 1200.f;
   jumpStrength = 600.f;
+
+  // Wall mechanics
+  wallSlideSpeed = 100.f;
+  wallJumpForce = {400.f, 600.f};
+  isWallSliding = false;
+  wallDir = 0;
 
   velocity = {0.f, 0.f};
   isGrounded = false;
@@ -20,37 +29,112 @@ Boy::Boy() {
 #include <algorithm> // for min/max
 
 void Boy::update(float dt, const Map &map) {
-  // 1. Reset horizontal velocity for steering
-  velocity.x = 0.f;
-
-  // 2. Input Handling
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
-      sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-    velocity.x = -moveSpeed;
-  }
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
-      sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-    velocity.x = moveSpeed;
-  }
-
-  // 3. Jump
+  // 1. Input Handling & Dynamic Speed (Acceleration/Friction)
+  bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
+              sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
+  bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
+               sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
   bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
                      sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
 
-  if (jumpPressed && isGrounded) {
-    velocity.y = -jumpStrength;
-    isGrounded = false;
+  // Horizontal Movement with Acceleration
+  if (left && !right) {
+    velocity.x -= acceleration * dt;
+  } else if (right && !left) {
+    velocity.x += acceleration * dt;
+  } else {
+    // Friction
+    if (velocity.x > 0) {
+      velocity.x -= friction * dt;
+      if (velocity.x < 0)
+        velocity.x = 0;
+    } else if (velocity.x < 0) {
+      velocity.x += friction * dt;
+      if (velocity.x > 0)
+        velocity.x = 0;
+    }
   }
+
+  // Cap speed
+  if (velocity.x > moveSpeed)
+    velocity.x = moveSpeed;
+  if (velocity.x < -moveSpeed)
+    velocity.x = -moveSpeed;
+
+  // 2. Wall Detection Logic
+  // Check for wall one pixel ahead
+  sf::FloatRect bounds = shape.getGlobalBounds();
+  sf::FloatRect leftCheck = bounds;
+  leftCheck.position.x -= 2.f;
+  sf::FloatRect rightCheck = bounds;
+  rightCheck.position.x += 2.f;
+
+  bool touchingLeft = !map.checkCollision(leftCheck).empty();
+  bool touchingRight = !map.checkCollision(rightCheck).empty();
+
+  // Reset wall state
+  isWallSliding = false;
+  wallDir = 0;
+
+  if (touchingLeft)
+    wallDir = -1;
+  if (touchingRight)
+    wallDir = 1;
+
+  // Wall Slide
+  // Only slide if moving down, not grounded, and pressing towards wall
+  if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
+    // Must be pressing towards the wall or just touching?
+    // Usually "hugging" the wall is required or just touching.
+    // Let's require pressing logic for more control, or just touching for
+    // simple stickiness. Meat Boy style: sticky if pressing against it or
+    // momentum carries you. For now, let's say if we are consistently pushing
+    // against it or falling past it. Let's implement sticking if velocity.y > 0
+
+    // Check input direction to stick?
+    if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
+      isWallSliding = true;
+      if (velocity.y > wallSlideSpeed) {
+        velocity.y = wallSlideSpeed;
+      }
+    }
+  }
+
+  // 3. Jump and Wall Jump
+  // Only trigger on rising edge (first frame of press)
+  bool jumpJustPressed = jumpPressed && !wasJumpPressed;
+
+  if (jumpJustPressed) {
+    // Normal Jump
+    if (isGrounded) {
+      velocity.y = -jumpStrength;
+      isGrounded = false;
+    }
+    // Wall Jump
+    else if (isWallSliding || (wallDir != 0 && !isGrounded)) {
+      velocity.y = -wallJumpForce.y;
+      velocity.x = -wallDir * wallJumpForce.x;
+    }
+  }
+
+  // Update previous state for next frame
+  wasJumpPressed = jumpPressed;
 
   // 4. Variable Gravity (Dynamic Acceleration)
   float currentGravity = gravity;
 
+  // Variable gravity relies on holding the button, so we check jumpPressed
+  // directly
   if (velocity.y < 0.f && !jumpPressed) {
     // Rising but button released: heavier gravity (shorter jump)
     currentGravity *= 2.0f;
   } else if (velocity.y > 0.f) {
-    // Falling: heavier gravity (fast fall)
-    currentGravity *= 2.5f;
+    // Falling: heavier gravity (fast fall), unless sliding
+    if (!isWallSliding) {
+      currentGravity *= 2.5f;
+    } else {
+      currentGravity = 0; // Handled by slide constant speed
+    }
   }
 
   velocity.y += currentGravity * dt;
@@ -79,8 +163,10 @@ void Boy::update(float dt, const Map &map) {
     if (velocity.x > 0) { // Moving Right
       shape.setPosition(
           {wall.position.x - shape.getSize().x, shape.getPosition().y});
+      velocity.x = 0;            // Stop on wall
     } else if (velocity.x < 0) { // Moving Left
       shape.setPosition({wall.position.x + wall.size.x, shape.getPosition().y});
+      velocity.x = 0; // Stop on wall
     }
   }
 

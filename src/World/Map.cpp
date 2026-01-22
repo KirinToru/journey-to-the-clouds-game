@@ -10,11 +10,11 @@ Map::Map() {
 #include <fstream>
 #include <iostream>
 
-void Map::loadFromFile(const std::string &filename) {
+bool Map::loadFromFile(const std::string &filename) {
   std::ifstream file(filename);
   if (!file.is_open()) {
     std::cerr << "Failed to open map file: " << filename << std::endl;
-    return;
+    return false;
   }
 
   grid.clear();
@@ -39,6 +39,7 @@ void Map::loadFromFile(const std::string &filename) {
       y++;
     }
   }
+  return true;
 }
 
 void Map::render(sf::RenderWindow &window) {
