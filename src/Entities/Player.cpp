@@ -1,22 +1,24 @@
-﻿#include "Boy.hpp"
+﻿#include "Player.hpp"
 
-Boy::Boy() {
+Player::Player() {
   // Player appearance
-  shape.setSize({30.f, 30.f});
-  shape.setFillColor(sf::Color::Red);
+  shape.setSize({24.f, 24.f});
+  shape.setFillColor(sf::Color(32, 2, 84));
   shape.setPosition({100.f, 0.f}); // Start position
+  shape.setOutlineColor(sf::Color::White);
+  shape.setOutlineThickness(1.f);
 
   // Physics parameters
   moveSpeed = 300.f;
-  acceleration = 2000.f;
-  friction = 1000.f;
+  acceleration = 1500.f;
+  friction = 1200.f;
 
-  gravity = 1200.f;
-  jumpStrength = 600.f;
+  gravity = 1000.f;
+  jumpStrength = 500.f;
 
   // Wall mechanics
-  wallSlideSpeed = 100.f;
-  wallJumpForce = {400.f, 600.f};
+  wallSlideSpeed = 80.f;
+  wallJumpForce = {320.f, 480.f};
   isWallSliding = false;
   wallDir = 0;
 
@@ -26,9 +28,8 @@ Boy::Boy() {
 
 // Include Map for collision checks
 #include "../World/Map.hpp"
-#include <algorithm> // for min/max
 
-void Boy::update(float dt, const Map &map) {
+void Player::update(float dt, const Map &map) {
   // 1. Input Handling & Dynamic Speed (Acceleration/Friction)
   bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
               sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
@@ -62,7 +63,6 @@ void Boy::update(float dt, const Map &map) {
     velocity.x = -moveSpeed;
 
   // 2. Wall Detection Logic
-  // Check for wall one pixel ahead
   sf::FloatRect bounds = shape.getGlobalBounds();
   sf::FloatRect leftCheck = bounds;
   leftCheck.position.x -= 2.f;
@@ -82,16 +82,7 @@ void Boy::update(float dt, const Map &map) {
     wallDir = 1;
 
   // Wall Slide
-  // Only slide if moving down, not grounded, and pressing towards wall
   if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
-    // Must be pressing towards the wall or just touching?
-    // Usually "hugging" the wall is required or just touching.
-    // Let's require pressing logic for more control, or just touching for
-    // simple stickiness. Meat Boy style: sticky if pressing against it or
-    // momentum carries you. For now, let's say if we are consistently pushing
-    // against it or falling past it. Let's implement sticking if velocity.y > 0
-
-    // Check input direction to stick?
     if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
       isWallSliding = true;
       if (velocity.y > wallSlideSpeed) {
@@ -131,7 +122,7 @@ void Boy::update(float dt, const Map &map) {
   } else if (velocity.y > 0.f) {
     // Falling: heavier gravity (fast fall), unless sliding
     if (!isWallSliding) {
-      currentGravity *= 2.5f;
+      currentGravity *= 1.8f;
     } else {
       currentGravity = 0; // Handled by slide constant speed
     }
@@ -160,13 +151,23 @@ void Boy::update(float dt, const Map &map) {
       continue;
 
     // Resolve X collision
+    float playerCenter = shape.getPosition().x + shape.getSize().x / 2.f;
+    float wallCenter = wall.position.x + wall.size.x / 2.f;
+
     if (velocity.x > 0) { // Moving Right
-      shape.setPosition(
-          {wall.position.x - shape.getSize().x, shape.getPosition().y});
-      velocity.x = 0;            // Stop on wall
+      // Only resolve if wall is to the right
+      if (wallCenter > playerCenter) {
+        shape.setPosition(
+            {wall.position.x - shape.getSize().x, shape.getPosition().y});
+        velocity.x = 0; // Stop on wall
+      }
     } else if (velocity.x < 0) { // Moving Left
-      shape.setPosition({wall.position.x + wall.size.x, shape.getPosition().y});
-      velocity.x = 0; // Stop on wall
+      // Only resolve if wall is to the left
+      if (wallCenter < playerCenter) {
+        shape.setPosition(
+            {wall.position.x + wall.size.x, shape.getPosition().y});
+        velocity.x = 0; // Stop on wall
+      }
     }
   }
 
@@ -174,6 +175,7 @@ void Boy::update(float dt, const Map &map) {
   // Reset grounded (will be set true if we land on something)
   isGrounded = false;
 
+  float prevBottom = shape.getPosition().y + shape.getSize().y;
   shape.move({0.f, velocity.y * dt});
 
   // Check collisions after Y move
@@ -192,6 +194,12 @@ void Boy::update(float dt, const Map &map) {
 
     // Resolve Y collision
     if (velocity.y > 0) { // Falling
+      // Only snap to top if we were previously ABOVE the wall
+      // Tolerance allows for fast falling, but prevents snapping from
+      // side/bottom
+      if (prevBottom > wall.position.y + 15.f)
+        continue;
+
       shape.setPosition(
           {shape.getPosition().x, wall.position.y - shape.getSize().y});
       velocity.y = 0.f;
@@ -203,9 +211,9 @@ void Boy::update(float dt, const Map &map) {
   }
 }
 
-void Boy::render(sf::RenderWindow &window) { window.draw(shape); }
+void Player::render(sf::RenderWindow &window) { window.draw(shape); }
 
-void Boy::reset(sf::Vector2f position) {
+void Player::reset(sf::Vector2f position) {
   shape.setPosition(position);
   velocity = {0.f, 0.f};
   isGrounded = false;

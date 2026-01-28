@@ -1,0 +1,39 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "tutorial.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "tutorial.tmx": {
+            "scale": 1.0501953124999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 483.7195462153619,
+                "y": 344.6977868700019
+            }
+        },
+        "tutorial.tmx#MainTileset": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Kirin/source/repos/retro-boy-game/assets/levels",
+    "last.imagePath": "C:/Users/Kirin/source/repos/retro-boy-game/assets/tilesets",
+    "map.height": 25,
+    "map.lastUsedExportFilter": "CSV files (*.csv)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 33,
+    "openFiles": [
+        "tutorial.tmx"
+    ],
+    "project": "retroboy.tiled-project",
+    "recentFiles": [
+        "tutorial.tmx"
+    ],
+    "tileset.embedInMap": false,
+    "tileset.type": 1
+}

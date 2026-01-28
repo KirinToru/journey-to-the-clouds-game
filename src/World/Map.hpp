@@ -4,8 +4,8 @@
 
 class Map {
 public:
-  // Tile size: 40px
-  static constexpr float TILE_SIZE = 40.f;
+  // Tile size: 32px
+  static constexpr float TILE_SIZE = 32.f;
 
   Map();
 
@@ -28,13 +28,27 @@ public:
   // Returns a vector of bounding boxes of the tiles that intersect.
   std::vector<sf::FloatRect> checkCollision(const sf::FloatRect &bounds) const;
 
+  // Checks if the player bounds intersect with the finish tile
+  bool checkFinish(const sf::FloatRect &bounds) const;
+
 private:
-  // 2D grid storing tile IDs. 0 = empty, 1 = solid block.
+  // 2D grid storing tile IDs.
+  // -1 = Empty
+  // 2 = Wall
+  // 1 = Finish
+  // 0 = Spawn
   // Outer vector is rows (Y), inner is columns (X).
   std::vector<std::vector<int>> grid;
 
   sf::Vector2f startPosition{100.f, 100.f}; // Default if not found
+  sf::FloatRect finishArea;
+  bool hasFinish;
 
   // Helper to setup shapes for rendering
   sf::RectangleShape tileShape;
+
+  // Textures
+  sf::Texture finishTexture;
+  sf::Texture spawnTexture;
+  sf::Texture wallTexture;
 };

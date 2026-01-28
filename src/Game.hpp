@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Entities/Boy.hpp"
+#include "Entities/Player.hpp"
 #include "World/Map.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
-
 
 class Game {
 public:
@@ -17,12 +16,14 @@ private:
   void render();
   void loadLevel(const std::string &filename);
 
-private:
   sf::RenderWindow mWindow;
   sf::View mCamera;
 
-  Boy mPlayer;
+  Player mPlayer;
   Map mMap;
+
+  sf::Texture mBackgroundTexture;
+  sf::Sprite mBackgroundSprite;
 
   static const sf::Time TimePerFrame;
 };

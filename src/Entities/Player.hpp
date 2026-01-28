@@ -1,12 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-class Boy {
+class Player {
 public:
-  Boy(); // Constructor
+  Player(); // Constructor
 
   // Func that activates physics
-  // Now requires Map for collision checks
   void update(float dt, const class Map &map);
 
   // Func that is rendering player on the screen
@@ -17,6 +16,7 @@ public:
 
   sf::Vector2f getPosition() const { return shape.getPosition(); }
   sf::Vector2f getVelocity() const { return velocity; }
+  sf::FloatRect getBounds() const { return shape.getGlobalBounds(); }
 
 private:
   sf::RectangleShape shape; // Player's shape

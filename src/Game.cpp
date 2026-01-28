@@ -4,9 +4,16 @@
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
 
 Game::Game()
-    : mWindow(sf::VideoMode({1280, 720}), "Retro Boy"),
-      mCamera(mWindow.getDefaultView()), mPlayer(), mMap() {
-  loadLevel("assets/levels/testX.txt");
+    : mWindow(sf::VideoMode({1280, 720}), "Journey to the Clouds"),
+      mCamera({0.f, 0.f}, {640.f, 360.f}), mPlayer(), mMap(),
+      mBackgroundSprite(mBackgroundTexture) {
+
+  if (!mBackgroundTexture.loadFromFile("assets/backgrounds/bg_forest.png")) {
+    std::cerr << "Failed to load bg_forest.png" << std::endl;
+  }
+  mBackgroundSprite.setTexture(mBackgroundTexture, true);
+
+  loadLevel("assets/levels/tutorial.csv");
 }
 
 void Game::run() {
@@ -23,7 +30,6 @@ void Game::run() {
       processEvents();
       update(TimePerFrame);
     }
-
     render();
   }
 }
@@ -38,23 +44,14 @@ void Game::processEvents() {
     if (const auto *resized = event->getIf<sf::Event::Resized>()) {
       sf::Vector2f newSize(static_cast<float>(resized->size.x),
                            static_cast<float>(resized->size.y));
-      mCamera.setSize(newSize);
+      // Maintain 2x Zoom
+      mCamera.setSize({newSize.x / 2.f, newSize.y / 2.f});
     }
 
     // Key Presses
     if (const auto *keyPress = event->getIf<sf::Event::KeyPressed>()) {
       if (keyPress->code == sf::Keyboard::Key::R) {
         mPlayer.reset(mMap.getStartPosition());
-      }
-      // Map Switching
-      if (keyPress->code == sf::Keyboard::Key::Num1) {
-        loadLevel("assets/levels/testX.txt");
-      }
-      if (keyPress->code == sf::Keyboard::Key::Num2) {
-        loadLevel("assets/levels/testY.txt");
-      }
-      if (keyPress->code == sf::Keyboard::Key::Num3) {
-        loadLevel("assets/levels/testFall.txt");
       }
     }
   }
@@ -68,35 +65,58 @@ void Game::update(sf::Time dt) {
     mPlayer.reset(mMap.getStartPosition());
   }
 
+  // Finish Logic
+  if (mMap.checkFinish(mPlayer.getBounds())) {
+    std::cout << "Level Finished! Resetting..." << std::endl;
+    mPlayer.reset(mMap.getStartPosition());
+  }
+
   // Camera Logic
   sf::Vector2f playerPos = mPlayer.getPosition();
   sf::Vector2f viewSize = mCamera.getSize();
-  float camX, camY;
+  sf::Vector2f currentCenter = mCamera.getCenter();
 
-  // CENTER MAP X
+  float targetX, targetY;
+
+  // Calculate TARGET X (Clamped to map)
   float mapW = mMap.getWidth();
   if (mapW < viewSize.x) {
-    camX = mapW / 2.f;
+    targetX = mapW / 2.f;
   } else {
-    camX = std::max(playerPos.x, viewSize.x / 2.f);
-    camX = std::min(camX, mapW - viewSize.x / 2.f);
+    targetX = std::max(playerPos.x, viewSize.x / 2.f);
+    targetX = std::min(targetX, mapW - viewSize.x / 2.f);
   }
 
-  // CENTER MAP Y
+  // Calculate TARGET Y (Clamped to map)
   float mapH = mMap.getHeight();
   if (mapH < viewSize.y) {
-    camY = mapH / 2.f;
+    targetY = mapH / 2.f;
   } else {
-    camY = std::max(playerPos.y, viewSize.y / 2.f);
-    camY = std::min(camY, mapH - viewSize.y / 2.f);
+    targetY = std::max(playerPos.y, viewSize.y / 2.f);
+    targetY = std::min(targetY, mapH - viewSize.y / 2.f);
   }
 
-  mCamera.setCenter({camX, camY});
+  // Smoothly interpolate current center towards target
+  // Factor 5.0f determines the "tightness" of the rubber band
+  float lerpSpeed = 5.0f;
+  float newX = currentCenter.x +
+               (targetX - currentCenter.x) * lerpSpeed * dt.asSeconds();
+  float newY = currentCenter.y +
+               (targetY - currentCenter.y) * lerpSpeed * dt.asSeconds();
+
+  mCamera.setCenter({newX, newY});
   mWindow.setView(mCamera);
 }
 
 void Game::render() {
   mWindow.clear(sf::Color::White);
+
+  // Draw background static to camera
+  mWindow.setView(mWindow.getDefaultView());
+  mWindow.draw(mBackgroundSprite);
+
+  // Restore World View
+  mWindow.setView(mCamera);
 
   mMap.render(mWindow);
   mPlayer.render(mWindow);
@@ -109,7 +129,6 @@ void Game::loadLevel(const std::string &filename) {
   if (mMap.loadFromFile(filename)) {
     mPlayer.reset(mMap.getStartPosition());
   } else {
-    // Fallback or error logging?
-    // std::cerr << "Failed to load level: " << filename << std::endl;
+    std::cerr << "Failed to load level: " << filename << std::endl;
   }
 }
