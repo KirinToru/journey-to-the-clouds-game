@@ -1,0 +1,48 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+        
+      - name: Download SFML
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/SFML/SFML/releases/download/3.0.2/SFML-3.0.2-Windows.VS2022.x64.zip" -OutFile sfml.zip
+          Expand-Archive sfml.zip -DestinationPath C:/
+        shell: pwsh
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Visual Studio 18 2026"
+        env:
+          SFML_DIR: C:/SFML-3.0.2
+
+      - name: Build Release
+        run: cmake --build build --config Release
+
+      - name: Package Build
+        run: |
+          mkdir release
+          Copy-Item build/Release/JourneyToTheClouds.exe release/
+          Copy-Item -Recurse assets release/assets
+          Copy-Item dll/*.dll release/
+          Compress-Archive -Path release/* -DestinationPath "JourneyToTheClouds-${{ steps.version.outputs.VERSION }}-win64.zip"
+        shell: pwsh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: JourneyToTheClouds-${{ steps.version.outputs.VERSION }}-win64.zip
+          generate_release_notes: true
