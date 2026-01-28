@@ -20,7 +20,7 @@ Player::Player() : sprite(texture) {
   // Animation setup
   currentFrame = 0;
   animationTimer = 0.f;
-  animationSpeed = 0.5f; // Switch frame every 0.5 seconds
+  animationSpeed = 2.0f; // Switch frame speed (in seconds)
 
   // Hitbox at feet
   shape.setSize({24.f, 32.f});
@@ -106,9 +106,7 @@ void Player::update(float dt, const Map &map) {
   if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
     if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
       isWallSliding = true;
-      if (velocity.y > wallSlideSpeed) {
-        velocity.y = wallSlideSpeed;
-      }
+      velocity.y = wallSlideSpeed;
     }
   }
 
@@ -259,7 +257,11 @@ void Player::update(float dt, const Map &map) {
   // Idle Animation Update (only when grounded and not moving)
   if (isGrounded && std::abs(velocity.x) < 10.f) {
     animationTimer += dt;
-    if (animationTimer >= animationSpeed) {
+
+    // Different timing for each frame transition
+    float frameDelay = (currentFrame == 0) ? 2.0f : 0.5f; // 0→1: 2s, 1→0: 0.5s
+
+    if (animationTimer >= frameDelay) {
       animationTimer = 0.f;
       currentFrame = (currentFrame + 1) % 2; // 2 frames
       sprite.setTextureRect(sf::IntRect({currentFrame * 32, 0}, {32, 32}));
@@ -285,16 +287,22 @@ void Player::update(float dt, const Map &map) {
   }
 
   if (facingRight) {
-    sprite.setScale({1.5f, 1.5f});
+    sprite.setScale({1.3f, 1.5f});
   } else {
-    sprite.setScale({-1.5f, 1.5f});
+    sprite.setScale({-1.3f, 1.5f});
   }
 }
 
-void Player::render(sf::RenderWindow &window) {
+void Player::render(sf::RenderWindow &window, bool showHitbox) {
   window.draw(sprite);
-  // uncomment to visualize hitbox
-  // window.draw(shape);
+  // Draw hitbox if debug mode is enabled
+  if (showHitbox) {
+    sf::RectangleShape hitboxVis = shape;
+    hitboxVis.setFillColor(sf::Color(255, 0, 0, 100));
+    hitboxVis.setOutlineColor(sf::Color::Red);
+    hitboxVis.setOutlineThickness(1.f);
+    window.draw(hitboxVis);
+  }
 }
 
 void Player::reset(sf::Vector2f position) {

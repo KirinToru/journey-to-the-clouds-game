@@ -10,18 +10,18 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "tutorial.tmx": {
-            "scale": 1.0501953124999999,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 483.7195462153619,
-                "y": 344.6977868700019
+                "x": 672,
+                "y": 416
             }
         },
         "tutorial.tmx#MainTileset": {
             "scaleInDock": 1
         }
     },
-    "last.exportedFilePath": "C:/Users/Kirin/source/repos/retro-boy-game/assets/levels",
+    "last.exportedFilePath": "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/levels",
     "last.imagePath": "C:/Users/Kirin/source/repos/retro-boy-game/assets/tilesets",
     "map.height": 25,
     "map.lastUsedExportFilter": "CSV files (*.csv)",

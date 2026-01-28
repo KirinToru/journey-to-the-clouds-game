@@ -9,7 +9,7 @@ public:
   void update(float dt, const class Map &map);
 
   // Func that is rendering player on the screen
-  void render(sf::RenderWindow &window);
+  void render(sf::RenderWindow &window, bool showHitbox = false);
 
   // Resets player state
   void reset(sf::Vector2f position);

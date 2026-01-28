@@ -15,6 +15,7 @@ private:
   void update(sf::Time dt);
   void render();
   void loadLevel(const std::string &filename);
+  void cycleWindowMode(); // F4 - cycle through window modes
 
   sf::RenderWindow mWindow;
   sf::View mCamera;
@@ -26,4 +27,16 @@ private:
   sf::Sprite mBackgroundSprite;
 
   static const sf::Time TimePerFrame;
+
+  // Debug features
+  bool mShowHitbox = false; // F1 toggle
+  bool mShowFPS = false;    // F2 toggle
+  int mWindowMode = 0;      // 0=windowed, 1=maximized, 2=fullscreen
+
+  // FPS counter
+  sf::Font mFPSFont;
+  bool mFPSFontLoaded = false;
+  sf::Clock mFPSClock;
+  int mFrameCount = 0;
+  int mCurrentFPS = 0;
 };
