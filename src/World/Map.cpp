@@ -4,20 +4,15 @@
 #include <iostream>
 #include <sstream>
 
-Map::Map() {
+Map::Map() : tileSprite(tilesetTexture) {
   tileShape.setSize({TILE_SIZE, TILE_SIZE});
   tileShape.setFillColor(sf::Color::White);
 
-  // Load Textures
-  if (!finishTexture.loadFromFile("assets/tiles/flag.png")) {
-    std::cerr << "Failed to load flag.png" << std::endl;
+  // Load single tileset texture
+  if (!tilesetTexture.loadFromFile("assets/tilesets/tileset.png")) {
+    std::cerr << "Failed to load tileset.png" << std::endl;
   }
-  if (!spawnTexture.loadFromFile("assets/tiles/void.png")) {
-    std::cerr << "Failed to load void.png" << std::endl;
-  }
-  if (!wallTexture.loadFromFile("assets/tiles/planks.png")) {
-    std::cerr << "Failed to load planks.png" << std::endl;
-  }
+  tileSprite.setTexture(tilesetTexture, true);
 
   // Load font for text objects
   fontLoaded = font.openFromFile("assets/fonts/font.ttf");
@@ -110,8 +105,8 @@ bool Map::parseTMX(const std::string &content) {
 
     if (dataStart != std::string::npos && dataEnd != std::string::npos) {
       std::string csvData = content.substr(
-          dataStart + 21, dataEnd - (dataStart + 21)); // 21 = length of opening
-                                                       // tag
+          dataStart + 21,
+          dataEnd - (dataStart + 21)); // 21 = length of opening tag
 
       auto grid = parseLayerData(csvData, mapWidth, mapHeight);
 
@@ -119,13 +114,12 @@ bool Map::parseTMX(const std::string &content) {
         mainGrid = grid;
 
         // Find spawn and finish in main grid
-        // After -1 adjustment: 0=spawn, 1=finish, 2=wall, 3=text
         int spawnCount = 0;
         for (size_t y = 0; y < mainGrid.size(); ++y) {
           for (size_t x = 0; x < mainGrid[y].size(); ++x) {
             int id = mainGrid[y][x];
 
-            if (id == 0) { // Spawn (Tiled ID 1)
+            if (id == 0) { // Spawn
               if (spawnCount > 0) {
                 std::cerr << "Warning: Multiple spawn points found!"
                           << std::endl;
@@ -134,7 +128,7 @@ bool Map::parseTMX(const std::string &content) {
                   static_cast<float>(x) * TILE_SIZE + TILE_SIZE / 2.f,
                   static_cast<float>(y) * TILE_SIZE + TILE_SIZE / 2.f};
               spawnCount++;
-            } else if (id == 1) { // Finish (Tiled ID 2)
+            } else if (id == 7) { // Finish
               finishAreas.push_back(
                   sf::FloatRect({static_cast<float>(x) * TILE_SIZE,
                                  static_cast<float>(y) * TILE_SIZE},
@@ -143,7 +137,7 @@ bool Map::parseTMX(const std::string &content) {
           }
         }
       } else if (layerName == "textures") {
-        textureGrid = grid;
+        textureGrid = parseTextureLayerData(csvData, mapWidth, mapHeight);
       }
     }
 
@@ -153,7 +147,7 @@ bool Map::parseTMX(const std::string &content) {
   // Parse object groups (for text)
   parseObjectGroup(content);
 
-  // Prepare cached text objects (optimization: avoid allocation in render loop)
+  // Prepare cached text objects
   prepareTextObjects();
 
   std::cout << "Loaded TMX map: " << mapWidth << "x" << mapHeight << " tiles"
@@ -184,8 +178,6 @@ std::vector<std::vector<int>> Map::parseLayerData(const std::string &csvData,
                  cell.end());
       if (!cell.empty()) {
         try {
-          // Tiled uses 1-based IDs, 0 means empty
-          // Subtract 1 to get our 0-based IDs, but handle 0 specially
           int rawId = std::stoi(cell);
           int tileId = (rawId == 0) ? -1 : rawId - 1;
           row.push_back(tileId);
@@ -300,37 +292,80 @@ void Map::render(sf::RenderWindow &window) {
       static_cast<int>(textureGrid.size()),
       static_cast<int>((viewCenter.y + viewSize.y / 2.f) / TILE_SIZE) + 2);
 
-  // Render only visible tiles (view culling optimization)
+  // Render only visible tiles
   for (int y = startY; y < endY; ++y) {
     for (int x = startX; x < endX; ++x) {
       if (y >= 0 && y < static_cast<int>(textureGrid.size()) && x >= 0 &&
           x < static_cast<int>(textureGrid[y].size())) {
-        int id = textureGrid[y][x];
+        uint32_t rawId = textureGrid[y][x];
 
         // Skip empty tiles
-        if (id < 3 || id > 5)
+        if (rawId == 0)
           continue;
 
-        tileShape.setPosition({static_cast<float>(x) * TILE_SIZE,
-                               static_cast<float>(y) * TILE_SIZE});
+        // Extract flip flags
+        bool flipH = (rawId & FLIP_H) != 0;
+        bool flipV = (rawId & FLIP_V) != 0;
+        bool flipD = (rawId & FLIP_D) != 0;
 
-        // Set texture based on tile type (switch is more efficient for multiple
-        // cases)
-        switch (id) {
-        case 5: // Wall texture
-          tileShape.setTexture(&wallTexture);
-          break;
-        case 4: // Finish texture
-          tileShape.setTexture(&finishTexture);
-          break;
-        case 3: // Spawn texture
-          tileShape.setTexture(&spawnTexture);
-          break;
-        default:
+        // Get actual tile ID
+        int tileId = static_cast<int>(rawId & TILE_MASK) - 1;
+
+        // Skip if invalid or column 0 of any row
+        if (tileId < 0)
           continue;
+        int tileCol = tileId % TILESET_COLS;
+        int tileRow = tileId / TILESET_COLS;
+        if (tileCol == 0)
+          continue; // Column 0 = functional tiles, don't render
+
+        // Calculate texture rect from tileset position
+        int texX = tileCol * static_cast<int>(TILE_SIZE);
+        int texY = tileRow * static_cast<int>(TILE_SIZE);
+        tileSprite.setTextureRect(
+            sf::IntRect({texX, texY}, {static_cast<int>(TILE_SIZE),
+                                       static_cast<int>(TILE_SIZE)}));
+
+        // Reset transformations
+        tileSprite.setOrigin({TILE_SIZE / 2.f, TILE_SIZE / 2.f});
+        tileSprite.setRotation(sf::degrees(0.f));
+        tileSprite.setScale({1.f, 1.f});
+
+        // Apply flip/rotation transformations
+        // Tiled uses diagonal flip for 90° rotation combined with H/V flips
+        float scaleX = flipH ? -1.f : 1.f;
+        float scaleY = flipV ? -1.f : 1.f;
+        float rotation = 0.f;
+
+        if (flipD) {
+          // Diagonal flip means 90° rotation anti-clockwise
+          // Combined with H/V flips for other rotations
+          if (flipH && flipV) {
+            rotation = 90.f;
+          } else if (flipH) {
+            rotation = -90.f;
+            scaleY = 1.f;
+          } else if (flipV) {
+            rotation = 90.f;
+            scaleX = 1.f;
+          } else {
+            rotation = -90.f;
+            scaleX = -1.f;
+            scaleY = 1.f;
+          }
+          // Swap scale axes for diagonal flip
+          std::swap(scaleX, scaleY);
         }
-        tileShape.setFillColor(sf::Color::White);
-        window.draw(tileShape);
+
+        tileSprite.setScale({scaleX, scaleY});
+        tileSprite.setRotation(sf::degrees(rotation));
+
+        // Position at tile center (due to centered origin)
+        tileSprite.setPosition(
+            {static_cast<float>(x) * TILE_SIZE + TILE_SIZE / 2.f,
+             static_cast<float>(y) * TILE_SIZE + TILE_SIZE / 2.f});
+
+        window.draw(tileSprite);
       }
     }
   }
@@ -339,6 +374,43 @@ void Map::render(sf::RenderWindow &window) {
   for (auto &text : cachedTexts) {
     window.draw(text);
   }
+}
+
+// Parse texture layer data preserving flip flags
+std::vector<std::vector<uint32_t>>
+Map::parseTextureLayerData(const std::string &csvData, int width, int height) {
+  std::vector<std::vector<uint32_t>> grid;
+  std::stringstream ss(csvData);
+  std::string line;
+
+  while (std::getline(ss, line)) {
+    if (line.empty() || line.find_first_not_of(" \t\r\n") == std::string::npos)
+      continue;
+
+    std::vector<uint32_t> row;
+    std::stringstream lineStream(line);
+    std::string cell;
+
+    while (std::getline(lineStream, cell, ',')) {
+      cell.erase(std::remove_if(cell.begin(), cell.end(), ::isspace),
+                 cell.end());
+      if (!cell.empty()) {
+        try {
+          // Store raw value including flip flags
+          uint32_t rawId = static_cast<uint32_t>(std::stoul(cell));
+          row.push_back(rawId);
+        } catch (...) {
+          row.push_back(0);
+        }
+      }
+    }
+
+    if (!row.empty()) {
+      grid.push_back(row);
+    }
+  }
+
+  return grid;
 }
 
 // Prepare text objects once (called after map loading)
@@ -433,8 +505,7 @@ Map::checkCollision(const sf::FloatRect &bounds) const {
   for (int y = top_tile; y <= bottom_tile; ++y) {
     for (int x = left_tile; x <= right_tile; ++x) {
       if (y >= 0 && y < mainGrid.size() && x >= 0 && x < mainGrid[y].size()) {
-        // Main layer ID 2 = wall (after -1 adjustment from Tiled's 3)
-        if (mainGrid[y][x] == 2) {
+        if (mainGrid[y][x] == 14) {
           collisions.push_back(sf::FloatRect({x * TILE_SIZE, y * TILE_SIZE},
                                              {TILE_SIZE, TILE_SIZE}));
         }
@@ -452,4 +523,42 @@ bool Map::checkFinish(const sf::FloatRect &bounds) const {
     }
   }
   return false;
+}
+
+std::vector<sf::FloatRect>
+Map::checkPlatformCollision(const sf::FloatRect &bounds) const {
+  std::vector<sf::FloatRect> platforms;
+
+  // Calculate tile range to check
+  int left_tile = static_cast<int>(bounds.position.x / TILE_SIZE);
+  int top_tile = static_cast<int>(bounds.position.y / TILE_SIZE);
+  int right_tile =
+      static_cast<int>((bounds.position.x + bounds.size.x) / TILE_SIZE);
+  int bottom_tile =
+      static_cast<int>((bounds.position.y + bounds.size.y) / TILE_SIZE);
+
+  // Clamp to map bounds
+  if (left_tile < 0)
+    left_tile = 0;
+  if (top_tile < 0)
+    top_tile = 0;
+  if (mainGrid.empty())
+    return platforms;
+  if (right_tile >= static_cast<int>(mainGrid[0].size()))
+    right_tile = static_cast<int>(mainGrid[0].size()) - 1;
+  if (bottom_tile >= static_cast<int>(mainGrid.size()))
+    bottom_tile = static_cast<int>(mainGrid.size()) - 1;
+
+  for (int y = top_tile; y <= bottom_tile; ++y) {
+    for (int x = left_tile; x <= right_tile; ++x) {
+      if (y >= 0 && y < mainGrid.size() && x >= 0 && x < mainGrid[y].size()) {
+        if (mainGrid[y][x] == 21) {
+          platforms.push_back(sf::FloatRect({x * TILE_SIZE, y * TILE_SIZE},
+                                            {TILE_SIZE, TILE_SIZE}));
+        }
+      }
+    }
+  }
+
+  return platforms;
 }

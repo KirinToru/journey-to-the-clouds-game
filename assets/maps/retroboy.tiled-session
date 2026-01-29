@@ -10,11 +10,11 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "tutorial.tmx": {
-            "scale": 1,
+            "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 672,
-                "y": 416
+                "x": 400,
+                "y": 492
             }
         },
         "tutorial.tmx#MainTileset": {

@@ -17,7 +17,7 @@ Game::Game()
   mBackgroundSprite.setTexture(mBackgroundTexture, true);
 
   // Scale the background (2x for pixel art look)
-  mBackgroundSprite.setScale({2.f, 2.f});
+  mBackgroundSprite.setScale({1.f, 1.f});
 
   // Load font for FPS counter
   mFPSFontLoaded = mFPSFont.openFromFile("assets/fonts/font.ttf");

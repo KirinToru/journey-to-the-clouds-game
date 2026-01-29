@@ -3,7 +3,7 @@
 #include <iostream>
 
 Player::Player() : sprite(texture) {
-  // Load Texture (spritesheet.png: Row 0 = Idle 2 frames, Row 1 = Run 4 frames)
+  // Load Texture
   if (!texture.loadFromFile("assets/player/spritesheet.png")) {
     std::cerr << "Failed to load player texture!" << std::endl;
   }
@@ -256,83 +256,133 @@ void Player::update(float dt, const Map &map) {
     }
   }
 
-  // Animation State Machine
+  // --- ONE-WAY PLATFORMS ---
+  // Check if player wants to drop through (S key)
+  bool dropPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down);
+
+  // Only check platforms if falling and not pressing drop
+  if (velocity.y >= 0 && !dropPressed) {
+    std::vector<sf::FloatRect> platforms =
+        map.checkPlatformCollision(shape.getGlobalBounds());
+
+    for (const auto &platform : platforms) {
+      sf::FloatRect playerBounds = shape.getGlobalBounds();
+
+      // Calculate overlap X to ensure we're actually on the platform
+      float overlapX = std::min(playerBounds.position.x + playerBounds.size.x,
+                                platform.position.x + platform.size.x) -
+                       std::max(playerBounds.position.x, platform.position.x);
+
+      // Need sufficient horizontal overlap
+      if (overlapX < 4.f)
+        continue;
+
+      // Only land if we were ABOVE the platform before this frame
+      if (prevBottom <= platform.position.y + 4.f) {
+        shape.setPosition(
+            {shape.getPosition().x, platform.position.y - shape.getSize().y});
+        velocity.y = 0.f;
+        isGrounded = true;
+        break; // Only land on one platform
+      }
+    }
+  }
+
   bool isMoving = std::abs(velocity.x) > 10.f;
+  bool inputActive = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
 
-  if (isGrounded) {
-    if (!isMoving) {
-      // IDLE ANIMATION (Row 0, 2 frames, asymmetric timing)
-      if (animState != AnimState::Idle) {
-        animState = AnimState::Idle;
+  if (isGrounded && !isWallSliding) {
+    if (!isMoving && !inputActive) {
+      if (animState != AnimState::Idle && animState != AnimState::Stopping) {
+        animState = AnimState::Stopping;
         currentFrame = 0;
         animationTimer = 0.f;
-      }
+      } else if (animState == AnimState::Stopping) {
 
-      animationTimer += dt;
-      float frameDelay =
-          (currentFrame == 0) ? 2.0f : 0.5f; // 0→1: 2s, 1→0: 0.5s
+        animationTimer += dt;
+        float stopSpeed = 0.06f;
 
-      if (animationTimer >= frameDelay) {
-        animationTimer = 0.f;
-        currentFrame = (currentFrame + 1) % 2;
-      }
-      sprite.setTextureRect(
-          sf::IntRect({currentFrame * 32, 0}, {32, 32})); // Row 0
+        if (animationTimer >= stopSpeed) {
+          animationTimer = 0.f;
+          currentFrame = (currentFrame == 0) ? 1 : 0;
+        }
+        if (std::abs(velocity.x) < 5.f) {
+          animState = AnimState::Idle;
+          currentFrame = 0;
+          animationTimer = 0.f;
+        }
 
-    } else {
-      // RUN ANIMATION (Row 1, 6 frames)
-      // Frames 0-1: Start animation (slower, play once: 0->1->2)
-      // Frames 2-5: Loop animation (fast: 2->3->4->5->2...)
-
-      if (animState == AnimState::Idle || !wasMoving) {
-        // Just started running - play start animation
-        animState = AnimState::RunStart;
-        currentFrame = 0;
-        animationTimer = 0.f;
-      }
-
-      animationTimer += dt;
-
-      // Different speed for start vs loop
-      float frameSpeed;
-      if (animState == AnimState::RunStart) {
-        frameSpeed = 0.2f; // 200ms per frame for start (slower)
+        sprite.setTextureRect(sf::IntRect({currentFrame * 32, 96}, {32, 32}));
       } else {
-        frameSpeed = 0.15f; // 150ms per frame for loop (faster)
+        animationTimer += dt;
+        float frameDelay = (currentFrame == 0) ? 2.0f : 0.5f;
+
+        if (animationTimer >= frameDelay) {
+          animationTimer = 0.f;
+          currentFrame = (currentFrame + 1) % 2;
+        }
+        sprite.setTextureRect(sf::IntRect({currentFrame * 32, 0}, {32, 32}));
       }
 
-      if (animationTimer >= frameSpeed) {
+    } else if (inputActive && isMoving) {
+      if (animState == AnimState::Idle || animState == AnimState::Stopping ||
+          !wasMoving) {
+        animState = AnimState::WalkStart;
+        currentFrame = 0;
         animationTimer = 0.f;
-        currentFrame++;
+      }
 
-        if (animState == AnimState::RunStart) {
-          // Start animation: frames 0, 1, then switch to loop at frame 2
+      animationTimer += dt;
+
+      if (animState == AnimState::WalkStart) {
+        float walkSpeed = 0.15f;
+
+        if (animationTimer >= walkSpeed) {
+          animationTimer = 0.f;
+          currentFrame++;
+
           if (currentFrame >= 2) {
             animState = AnimState::RunLoop;
-            currentFrame = 2; // Start loop at frame 2
-          }
-        } else {
-          // Loop animation: frames 2, 3, 4, 5, repeat
-          if (currentFrame > 5) {
-            currentFrame = 2;
+            currentFrame = 0;
           }
         }
+        sprite.setTextureRect(sf::IntRect({currentFrame * 32, 32}, {32, 32}));
+
+      } else {
+        float runSpeed = 0.1f;
+
+        if (animationTimer >= runSpeed) {
+          animationTimer = 0.f;
+          currentFrame = (currentFrame + 1) % 4;
+        }
+        sprite.setTextureRect(sf::IntRect({currentFrame * 32, 64}, {32, 32}));
       }
-      sprite.setTextureRect(
-          sf::IntRect({currentFrame * 32, 32}, {32, 32})); // Row 1
+
+    } else {
+      if (animState != AnimState::Stopping) {
+        animState = AnimState::Stopping;
+        currentFrame = 0;
+        animationTimer = 0.f;
+      }
+      animationTimer += dt;
+      float stopSpeed = 0.1f;
+
+      if (animationTimer >= stopSpeed) {
+        animationTimer = 0.f;
+        currentFrame = (currentFrame == 0) ? 1 : 0;
+      }
+
+      sprite.setTextureRect(sf::IntRect({currentFrame * 32, 96}, {32, 32}));
     }
   } else {
-    // In air - use first idle frame for now (TODO: add jump/fall frames)
     sprite.setTextureRect(sf::IntRect({0, 0}, {32, 32}));
-    animState = AnimState::Idle;
-    currentFrame = 0;
-    animationTimer = 0.f;
   }
 
   wasMoving = isMoving;
-
-  // Visual Update
-  // Position sprite at bottom-center of hitbox (origin is bottom-center)
   sf::Vector2f bottomCenter = {shape.getPosition().x + shape.getSize().x / 2.f,
                                shape.getPosition().y + shape.getSize().y};
   sprite.setPosition(bottomCenter);
@@ -353,7 +403,6 @@ void Player::update(float dt, const Map &map) {
 
 void Player::render(sf::RenderWindow &window, bool showHitbox) {
   window.draw(sprite);
-  // Draw hitbox if debug mode is enabled
   if (showHitbox) {
     sf::RectangleShape hitboxVis = shape;
     hitboxVis.setFillColor(sf::Color(255, 0, 0, 100));
@@ -364,7 +413,6 @@ void Player::render(sf::RenderWindow &window, bool showHitbox) {
 }
 
 void Player::reset(sf::Vector2f position) {
-  // Center the hitbox on the provided position (which is center of tile)
   shape.setPosition({position.x - shape.getSize().x / 2.f,
                      position.y - shape.getSize().y / 2.f});
   velocity = {0.f, 0.f};
