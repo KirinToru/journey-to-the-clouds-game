@@ -43,9 +43,12 @@ private:
   bool facingRight;
 
   // Animation
+  enum class AnimState { Idle, RunStart, RunLoop };
+  AnimState animState;
   int currentFrame;
   float animationTimer;
   float animationSpeed; // seconds per frame
+  bool wasMoving;       // Track if player was moving last frame
 
   bool wasJumpPressed;
 };

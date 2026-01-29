@@ -3,13 +3,13 @@
 #include <iostream>
 
 Player::Player() : sprite(texture) {
-  // Load Texture (idle.png is 64x32, 2 frames of 32x32)
-  if (!texture.loadFromFile("assets/player/idle.png")) {
+  // Load Texture (spritesheet.png: Row 0 = Idle 2 frames, Row 1 = Run 4 frames)
+  if (!texture.loadFromFile("assets/player/spritesheet.png")) {
     std::cerr << "Failed to load player texture!" << std::endl;
   }
   sprite.setTexture(texture, true);
 
-  // Set initial texture rect (first frame)
+  // Set initial texture rect (first frame of idle)
   sprite.setTextureRect(sf::IntRect({0, 0}, {32, 32}));
 
   // Set origin to bottom-center for proper positioning relative to hitbox
@@ -18,9 +18,11 @@ Player::Player() : sprite(texture) {
   facingRight = true;
 
   // Animation setup
+  animState = AnimState::Idle;
   currentFrame = 0;
   animationTimer = 0.f;
-  animationSpeed = 2.0f; // Switch frame speed (in seconds)
+  animationSpeed = 0.1f; // Base speed for run animation
+  wasMoving = false;
 
   // Hitbox at feet
   shape.setSize({24.f, 32.f});
@@ -254,24 +256,80 @@ void Player::update(float dt, const Map &map) {
     }
   }
 
-  // Idle Animation Update (only when grounded and not moving)
-  if (isGrounded && std::abs(velocity.x) < 10.f) {
-    animationTimer += dt;
+  // Animation State Machine
+  bool isMoving = std::abs(velocity.x) > 10.f;
 
-    // Different timing for each frame transition
-    float frameDelay = (currentFrame == 0) ? 2.0f : 0.5f; // 0→1: 2s, 1→0: 0.5s
+  if (isGrounded) {
+    if (!isMoving) {
+      // IDLE ANIMATION (Row 0, 2 frames, asymmetric timing)
+      if (animState != AnimState::Idle) {
+        animState = AnimState::Idle;
+        currentFrame = 0;
+        animationTimer = 0.f;
+      }
 
-    if (animationTimer >= frameDelay) {
-      animationTimer = 0.f;
-      currentFrame = (currentFrame + 1) % 2; // 2 frames
-      sprite.setTextureRect(sf::IntRect({currentFrame * 32, 0}, {32, 32}));
+      animationTimer += dt;
+      float frameDelay =
+          (currentFrame == 0) ? 2.0f : 0.5f; // 0→1: 2s, 1→0: 0.5s
+
+      if (animationTimer >= frameDelay) {
+        animationTimer = 0.f;
+        currentFrame = (currentFrame + 1) % 2;
+      }
+      sprite.setTextureRect(
+          sf::IntRect({currentFrame * 32, 0}, {32, 32})); // Row 0
+
+    } else {
+      // RUN ANIMATION (Row 1, 6 frames)
+      // Frames 0-1: Start animation (slower, play once: 0->1->2)
+      // Frames 2-5: Loop animation (fast: 2->3->4->5->2...)
+
+      if (animState == AnimState::Idle || !wasMoving) {
+        // Just started running - play start animation
+        animState = AnimState::RunStart;
+        currentFrame = 0;
+        animationTimer = 0.f;
+      }
+
+      animationTimer += dt;
+
+      // Different speed for start vs loop
+      float frameSpeed;
+      if (animState == AnimState::RunStart) {
+        frameSpeed = 0.2f; // 200ms per frame for start (slower)
+      } else {
+        frameSpeed = 0.15f; // 150ms per frame for loop (faster)
+      }
+
+      if (animationTimer >= frameSpeed) {
+        animationTimer = 0.f;
+        currentFrame++;
+
+        if (animState == AnimState::RunStart) {
+          // Start animation: frames 0, 1, then switch to loop at frame 2
+          if (currentFrame >= 2) {
+            animState = AnimState::RunLoop;
+            currentFrame = 2; // Start loop at frame 2
+          }
+        } else {
+          // Loop animation: frames 2, 3, 4, 5, repeat
+          if (currentFrame > 5) {
+            currentFrame = 2;
+          }
+        }
+      }
+      sprite.setTextureRect(
+          sf::IntRect({currentFrame * 32, 32}, {32, 32})); // Row 1
     }
   } else {
-    // Reset to first frame when moving/in air
+    // In air - use first idle frame for now (TODO: add jump/fall frames)
+    sprite.setTextureRect(sf::IntRect({0, 0}, {32, 32}));
+    animState = AnimState::Idle;
     currentFrame = 0;
     animationTimer = 0.f;
-    sprite.setTextureRect(sf::IntRect({0, 0}, {32, 32}));
   }
+
+  wasMoving = isMoving;
 
   // Visual Update
   // Position sprite at bottom-center of hitbox (origin is bottom-center)
