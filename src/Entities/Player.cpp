@@ -59,7 +59,8 @@ void Player::update(float dt, const Map &map) {
   bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
   bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up);
 
   // Horizontal Movement with Acceleration
   if (left && !right) {

@@ -78,6 +78,10 @@ void Game::processEvents() {
       if (keyPress->code == sf::Keyboard::Key::F4) {
         cycleWindowMode();
       }
+      // ESC - Exit game
+      if (keyPress->code == sf::Keyboard::Key::Escape) {
+        mWindow.close();
+      }
     }
   }
 }
