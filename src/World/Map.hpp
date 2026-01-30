@@ -15,7 +15,7 @@ class Map {
 public:
   // Tile size: 32px
   static constexpr float TILE_SIZE = 32.f;
-  static constexpr int TILESET_COLS = 7; // Columns in tileset (from TMX)
+  static constexpr int TILESET_COLS = 6; // Columns in tileset
 
   // Tiled flip flags (stored in high bits of tile ID)
   static constexpr uint32_t FLIP_H = 0x80000000; // Horizontal flip
@@ -72,9 +72,10 @@ private:
   // Main grid for collision detection (from "main" layer)
   std::vector<std::vector<int>> mainGrid;
 
-  // Texture grid for rendering (from "textures" layer)
-  // Stored as uint32_t to preserve Tiled flip flags
-  std::vector<std::vector<uint32_t>> textureGrid;
+  // Texture grids for rendering (cosmetics_main, cosmetics_add1,
+  // cosmetics_add2) Stored as uint32_t to preserve Tiled flip flags Rendered in
+  // order: [0] = cosmetics_main (back), [1] = add1, [2] = add2 (front)
+  std::vector<std::vector<std::vector<uint32_t>>> textureLayers;
 
   // Text objects from object layer (raw data)
   std::vector<MapText> textObjects;

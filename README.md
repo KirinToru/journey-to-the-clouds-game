@@ -43,7 +43,7 @@ You play as **Grim**, a demon who decides to leave his room in Hell and embark o
 - 🎮 Smooth physics-based movement with acceleration and friction
 - 🦘 Wall jumping and wall sliding mechanics
 - 🪜 One-way platforms (pass through from below, drop through with S)
-- 🎨 Tileset-based rendering with rotation/flip support
+- 🎨 Tileset-based rendering
 - 🗺️ TMX map loading (Tiled editor support)
 - ✨ Character animations (idle, walk, run, stop)
 
