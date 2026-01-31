@@ -43,7 +43,7 @@ private:
   bool facingRight;
 
   // Animation
-  enum class AnimState { Idle, WalkStart, RunLoop, Stopping };
+  enum class AnimState { Idle, WalkStart, RunLoop, Stopping, Jumping, Falling };
   AnimState animState;
   int currentFrame;
   float animationTimer;

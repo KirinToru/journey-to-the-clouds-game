@@ -1,0 +1,29 @@
+{
+    "activeFile": "tutorial.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "tutorial.tmx": {
+            "expandedGroupLayers": [
+                5
+            ],
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 354.5,
+                "y": 183.5
+            }
+        },
+        "tutorial.tmx#MainTileset": {
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "tutorial.tmx"
+    ],
+    "project": "tutorial.tiled-project",
+    "recentFiles": [
+        "tutorial.tmx"
+    ]
+}

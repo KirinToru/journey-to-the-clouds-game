@@ -25,7 +25,7 @@ Player::Player() : sprite(texture) {
   wasMoving = false;
 
   // Hitbox at feet
-  shape.setSize({24.f, 32.f});
+  shape.setSize({24.f, 24.f});
   shape.setFillColor(sf::Color(0, 0, 0, 0));
   shape.setOutlineThickness(1.f);
   shape.setOutlineColor(sf::Color::Green);
@@ -380,7 +380,43 @@ void Player::update(float dt, const Map &map) {
       sprite.setTextureRect(sf::IntRect({currentFrame * 32, 96}, {32, 32}));
     }
   } else {
-    sprite.setTextureRect(sf::IntRect({0, 0}, {32, 32}));
+    // In air (jumping or falling) - not grounded and not wall sliding
+    float airAnimSpeed = 0.1f; // Same speed as run animation
+
+    if (velocity.y < 0) {
+      // Going up - Jump animation (row 5, index 4)
+      if (animState != AnimState::Jumping) {
+        animState = AnimState::Jumping;
+        currentFrame = 0;
+        animationTimer = 0.f;
+      }
+
+      animationTimer += dt;
+      if (animationTimer >= airAnimSpeed) {
+        animationTimer = 0.f;
+        currentFrame = (currentFrame + 1) % 2; // 2 frames: jump1, jump2
+      }
+
+      sprite.setTextureRect(
+          sf::IntRect({currentFrame * 32, 128}, {32, 32})); // Row 5 = y:128
+
+    } else {
+      // Going down - Fall animation (row 6, index 5)
+      if (animState != AnimState::Falling) {
+        animState = AnimState::Falling;
+        currentFrame = 0;
+        animationTimer = 0.f;
+      }
+
+      animationTimer += dt;
+      if (animationTimer >= airAnimSpeed) {
+        animationTimer = 0.f;
+        currentFrame = (currentFrame + 1) % 2; // 2 frames: fall1, fall2
+      }
+
+      sprite.setTextureRect(
+          sf::IntRect({currentFrame * 32, 160}, {32, 32})); // Row 6 = y:160
+    }
   }
 
   wasMoving = isMoving;
@@ -396,9 +432,9 @@ void Player::update(float dt, const Map &map) {
   }
 
   if (facingRight) {
-    sprite.setScale({1.3f, 1.5f});
+    sprite.setScale({1.f, 1.f});
   } else {
-    sprite.setScale({-1.3f, 1.5f});
+    sprite.setScale({-1.f, 1.f});
   }
 }
 
