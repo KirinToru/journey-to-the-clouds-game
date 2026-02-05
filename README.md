@@ -119,8 +119,8 @@ The executable will be generated in the `build` folder.
 ## Roadmap
 
 ### 🎨 User Interface
-- [ ] Main menu
-- [ ] Pause menu
+- [x] Main menu
+- [x] Pause menu
 - [ ] Level select screen
 - [ ] Game over / Victory screens
 - [ ] HUD (lives counter, timer)
