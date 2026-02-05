@@ -17,6 +17,10 @@ set(SOURCES
     "src/Game.cpp"
     "src/Entities/Player.cpp"
     "src/World/Map.cpp"
+    "src/States/MenuState.cpp"
+    "src/States/GameState.cpp"
+    "src/States/PauseState.cpp"
+    "src/GUI/Button.cpp"
 )
 add_executable(JourneyToTheClouds ${SOURCES})
 target_link_libraries(JourneyToTheClouds

@@ -39,7 +39,7 @@ public:
   sf::Vector2f getStartPosition() const { return startPosition; }
 
   // Renders only the visible portion of the map (view culling)
-  void render(sf::RenderWindow &window);
+  void render(sf::RenderWindow &window, sf::Vector2f playerPos = {0, 0});
 
   // Checks for collisions between an entity's bounding box and the map walls.
   std::vector<sf::FloatRect> checkCollision(const sf::FloatRect &bounds) const;

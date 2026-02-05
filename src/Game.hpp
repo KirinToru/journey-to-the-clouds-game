@@ -1,42 +1,54 @@
 #pragma once
 
-#include "Entities/Player.hpp"
-#include "World/Map.hpp"
+#include "States/State.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <memory>
+#include <vector>
 
 class Game {
 public:
   Game();
   void run();
 
+  void pushState(std::unique_ptr<State> state);
+  void popState();
+  void changeState(std::unique_ptr<State> state);
+
+  // New: Clear all states and push a new one (perfect for Restart/Menu)
+  void clearStatesAndPush(std::unique_ptr<State> state);
+
+  const sf::RenderWindow &getWindow() const { return mWindow; }
+
+  // Public so States can trigger it
+  void cycleWindowMode();
+
 private:
   void processEvents();
   void update(sf::Time dt);
   void render();
-  void loadLevel(const std::string &filename);
-  void cycleWindowMode(); // F4 - cycle through window modes
+
+  void applyPendingChanges();
 
   sf::RenderWindow mWindow;
-  sf::View mCamera;
-
-  Player mPlayer;
-  Map mMap;
-
-  sf::Texture mBackgroundTexture;
-  sf::Sprite mBackgroundSprite;
+  std::vector<std::unique_ptr<State>> mStates;
 
   static const sf::Time TimePerFrame;
 
-  // Debug features
-  bool mShowHitbox = false; // F1 toggle
-  bool mShowFPS = false;    // F2 toggle
-  int mWindowMode = 0;      // 0=windowed, 1=maximized, 2=fullscreen
+  int mWindowMode = 0; // 0=windowed, 1=maximized, 2=fullscreen
 
-  // FPS counter
-  sf::Font mFPSFont;
-  bool mFPSFontLoaded = false;
-  sf::Clock mFPSClock;
-  int mFrameCount = 0;
-  int mCurrentFPS = 0;
+  // Pending State Changes
+  enum class Action {
+    Push,
+    Pop,
+    Change,
+    ClearAndPush // Changes stack to [NewState]
+  };
+
+  struct PendingChange {
+    Action action;
+    std::unique_ptr<State> state;
+  };
+
+  std::vector<PendingChange> mPendingChanges;
 };

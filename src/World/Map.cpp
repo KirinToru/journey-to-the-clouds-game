@@ -294,7 +294,7 @@ void Map::parseObjectGroup(const std::string &content) {
   }
 }
 
-void Map::render(sf::RenderWindow &window) {
+void Map::render(sf::RenderWindow &window, sf::Vector2f playerPos) {
   // Get the current view bounds for culling
   sf::View view = window.getView();
   sf::Vector2f viewCenter = view.getCenter();
@@ -366,7 +366,46 @@ void Map::render(sf::RenderWindow &window) {
 
   // Render cached text objects (no allocation in render loop)
   for (auto &text : cachedTexts) {
-    window.draw(text);
+    // Proximity Fade Logic
+    sf::Vector2f textPos = text.getPosition();
+    sf::Vector2f textSize = text.getGlobalBounds().size;
+
+    // Estimate text center for distance
+    sf::Vector2f textCenter = {textPos.x + textSize.x / 2.f,
+                               textPos.y + textSize.y / 2.f};
+
+    // Calculate squared distance to player (avoid sqrt if possible, but for
+    // linear fade we need sqrt)
+    float dx = textCenter.x - playerPos.x;
+    float dy = textCenter.y - playerPos.y;
+    float distSq = dx * dx + dy * dy;
+    float dist = std::sqrt(distSq);
+
+    // Fade parameters (pixels)
+    float fadeStartDist = 75.f; // Fully visible within this range
+    float fadeEndDist = 150.f;  // Fully invisible outside this range
+
+    float alpha = 0.f;
+    if (dist < fadeStartDist) {
+      alpha = 255.f;
+    } else if (dist < fadeEndDist) {
+      // Linearly interpolate
+      float t = (dist - fadeStartDist) / (fadeEndDist - fadeStartDist);
+      alpha = 255.f * (1.f - t);
+    }
+
+    // SFML 3.x uses u8 for Color constructor
+    sf::Color color = text.getFillColor();
+    color.a = static_cast<uint8_t>(alpha);
+    text.setFillColor(color);
+
+    sf::Color outline = text.getOutlineColor();
+    outline.a = static_cast<uint8_t>(alpha);
+    text.setOutlineColor(outline);
+
+    if (alpha > 0) {
+      window.draw(text);
+    }
   }
 }
 

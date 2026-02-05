@@ -402,20 +402,16 @@ void Player::update(float dt, const Map &map) {
 
     } else {
       // Going down - Fall animation (row 6, index 5)
+      // Use single frame for falling to prevent flickering if frame 2 is
+      // missing
       if (animState != AnimState::Falling) {
         animState = AnimState::Falling;
         currentFrame = 0;
         animationTimer = 0.f;
       }
 
-      animationTimer += dt;
-      if (animationTimer >= airAnimSpeed) {
-        animationTimer = 0.f;
-        currentFrame = (currentFrame + 1) % 2; // 2 frames: fall1, fall2
-      }
-
-      sprite.setTextureRect(
-          sf::IntRect({currentFrame * 32, 160}, {32, 32})); // Row 6 = y:160
+      // Keep strictly at frame 0
+      sprite.setTextureRect(sf::IntRect({0, 160}, {32, 32}));
     }
   }
 
