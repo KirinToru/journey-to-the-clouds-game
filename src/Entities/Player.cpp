@@ -25,14 +25,14 @@ Player::Player() : sprite(texture) {
   wasMoving = false;
 
   // Hitbox at feet
-  shape.setSize({24.f, 24.f});
+  shape.setSize({32.f, 32.f});
   shape.setFillColor(sf::Color(0, 0, 0, 0));
   shape.setOutlineThickness(1.f);
   shape.setOutlineColor(sf::Color::Green);
   shape.setPosition({100.f, 0.f}); // Start position
 
   // Physics parameters
-  moveSpeed = 300.f;
+  moveSpeed = 400.f;
   acceleration = 1500.f;
   friction = 1200.f;
 
@@ -40,8 +40,8 @@ Player::Player() : sprite(texture) {
   jumpStrength = 500.f;
 
   // Wall mechanics
-  wallSlideSpeed = 80.f;
-  wallJumpForce = {320.f, 480.f};
+  wallSlideSpeed = 150.f;
+  wallJumpForce = {350.f, 500.f};
   isWallSliding = false;
   wallDir = 0;
 
@@ -428,9 +428,9 @@ void Player::update(float dt, const Map &map) {
   }
 
   if (facingRight) {
-    sprite.setScale({1.f, 1.f});
+    sprite.setScale({1.5f, 1.5f});
   } else {
-    sprite.setScale({-1.f, 1.f});
+    sprite.setScale({-1.5f, 1.5f});
   }
 }
 

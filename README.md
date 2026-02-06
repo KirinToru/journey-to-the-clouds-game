@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Journey to the Clouds" height="200px"/>
+  <img src="assets/logo.png" alt="Journey to the Clouds" height="50px"/>
 </p>
 <h1 align="center">Journey to the Clouds</h1>
 <h3 align="center">A 2D platformer game built with SFML</h3>
@@ -127,7 +127,7 @@ The executable will be generated in the `build` folder.
 
 ### ❤️ Lives System
 - [ ] 9 lives per run
-- [ ] Respawn at level start on death
+- [x] Respawn at level start on death
 - [ ] Full restart on losing all lives
 - [ ] Visual lives indicator
 

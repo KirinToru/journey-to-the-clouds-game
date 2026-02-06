@@ -10,17 +10,6 @@ MenuState::MenuState(Game *game)
     std::cerr << "Failed to load font in MenuState!" << std::endl;
   }
 
-  if (!mBackgroundTexture.loadFromFile("assets/backgrounds/bg_bricks.png")) {
-    std::cerr << "Failed to load menu background!" << std::endl;
-  }
-  mBackgroundTexture.setRepeated(true);
-  mBackgroundSprite.setTexture(mBackgroundTexture);
-
-  // Scale to match game view (Game view = 640x360, Window = 1280x720, so 2x
-  // zoom) Game background was 0.8f. To look same in menu (1x view), we need
-  // 0.8f * 2 = 1.6f
-  mBackgroundSprite.setScale({1.6f, 1.6f});
-
   // Create buttons initially
   mButtons.emplace_back(mFont, "Start Game", sf::Vector2f{0, 0});
   mButtons.emplace_back(mFont, "Exit", sf::Vector2f{0, 0});
@@ -71,8 +60,7 @@ void MenuState::handleInput(sf::Event &event) {
       sf::Vector2f mousePos = mGame->getWindow().mapPixelToCoords(
           {mouseClick->position.x, mouseClick->position.y});
 
-      // Check if clicking the currently selected button (which should be true
-      // if we hovered)
+      // Check if clicking the currently selected button
       if (mButtons[mSelectedOptionIndex].contains(mousePos)) {
         if (mSelectedOptionIndex == 0) { // Start
           mGame->changeState(std::make_unique<GameState>(mGame));
@@ -109,8 +97,7 @@ void MenuState::handleInput(sf::Event &event) {
 }
 
 void MenuState::update(sf::Time dt) {
-  // Check for window resize (covers F4/Maximize where event might be missed or
-  // processed elsewhere)
+  // Check for window resize
   sf::Vector2u currentSize = mGame->getWindow().getSize();
   if (currentSize != mLastWindowSize) {
     updateLayout();
@@ -129,17 +116,6 @@ void MenuState::render(sf::RenderWindow &window) {
   window.setView(sf::View(sf::FloatRect({0, 0}, size)));
 
   window.clear(sf::Color::Black);
-
-  // Update Texture Rect to cover the whole window + offset
-  float scale = mBackgroundSprite.getScale().x;
-
-  int iX = static_cast<int>(mBackgroundOffset.x);
-  int iY = static_cast<int>(mBackgroundOffset.y);
-  int iW = static_cast<int>(size.x / scale);
-  int iH = static_cast<int>(size.y / scale);
-
-  mBackgroundSprite.setTextureRect(sf::IntRect({iX, iY}, {iW, iH}));
-  window.draw(mBackgroundSprite);
 
   for (auto &button : mButtons) {
     button.render(window);

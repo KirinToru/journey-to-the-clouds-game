@@ -15,7 +15,7 @@ class Map {
 public:
   // Tile size: 32px
   static constexpr float TILE_SIZE = 32.f;
-  static constexpr int TILESET_COLS = 6; // Columns in tileset
+  static constexpr int TILESET_COLS = 5; // Columns in tileset (160px / 32px)
 
   // Tiled flip flags (stored in high bits of tile ID)
   static constexpr uint32_t FLIP_H = 0x80000000; // Horizontal flip
@@ -23,6 +23,14 @@ public:
   static constexpr uint32_t FLIP_D = 0x20000000; // Diagonal (90° rotation)
   static constexpr uint32_t TILE_MASK =
       0x1FFFFFFF; // Mask to get actual tile ID
+
+  enum TileType {
+    Start = 0,    // Heart
+    Finish = 1,   // Star
+    Wall = 2,     // Red Block (Solid)
+    Platform = 3, // Platform (One-way)
+    Spikes = 4    // Hazard
+  };
 
   Map();
 

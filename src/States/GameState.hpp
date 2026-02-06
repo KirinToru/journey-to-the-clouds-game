@@ -40,4 +40,8 @@ private:
   sf::RectangleShape mFadeOverlay;
   float mResetTimer;
   bool mIsResetting;
+
+  // Level System
+  std::vector<std::string> mLevels;
+  int mCurrentLevelIndex;
 };

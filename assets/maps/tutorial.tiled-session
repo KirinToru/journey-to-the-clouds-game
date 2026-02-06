@@ -3,16 +3,34 @@
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "level1.tmx": {
+            "expandedGroupLayers": [
+                5
+            ],
+            "scale": 1.07825,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 246.6960352422908,
+                "y": 299.5594713656388
+            }
+        },
+        "level1.tmx#MainTileset": {
+            "scaleInDock": 1
+        },
         "tutorial.tmx": {
             "expandedGroupLayers": [
                 5
             ],
-            "scale": 2,
-            "selectedLayer": 1,
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 354.5,
-                "y": 183.5
+                "x": 557,
+                "y": 369
             }
         },
         "tutorial.tmx#MainTileset": {
@@ -20,10 +38,12 @@
         }
     },
     "openFiles": [
-        "tutorial.tmx"
+        "tutorial.tmx",
+        "level1.tmx"
     ],
     "project": "tutorial.tiled-project",
     "recentFiles": [
+        "level1.tmx",
         "tutorial.tmx"
     ]
 }

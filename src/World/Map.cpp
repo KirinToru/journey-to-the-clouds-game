@@ -119,7 +119,9 @@ bool Map::parseTMX(const std::string &content) {
           for (size_t x = 0; x < mainGrid[y].size(); ++x) {
             int id = mainGrid[y][x];
 
-            if (id == 0) { // Spawn
+            int type =
+                id % TILESET_COLS; // Map texture to functional type (Row 0)
+            if (type == TileType::Start) { // Spawn
               if (spawnCount > 0) {
                 std::cerr << "Warning: Multiple spawn points found!"
                           << std::endl;
@@ -128,7 +130,7 @@ bool Map::parseTMX(const std::string &content) {
                   static_cast<float>(x) * TILE_SIZE + TILE_SIZE / 2.f,
                   static_cast<float>(y) * TILE_SIZE + TILE_SIZE / 2.f};
               spawnCount++;
-            } else if (id == 6) { // Finish (row 1, col 0)
+            } else if (id == TileType::Finish) { // Finish
               finishAreas.push_back(
                   sf::FloatRect({static_cast<float>(x) * TILE_SIZE,
                                  static_cast<float>(y) * TILE_SIZE},
@@ -152,12 +154,6 @@ bool Map::parseTMX(const std::string &content) {
           textureLayers.resize(3);
         }
         textureLayers[2] = parseTextureLayerData(csvData, mapWidth, mapHeight);
-      } else if (layerName == "textures") {
-        // Legacy support for old maps with single "textures" layer
-        if (textureLayers.size() < 1) {
-          textureLayers.resize(1);
-        }
-        textureLayers[0] = parseTextureLayerData(csvData, mapWidth, mapHeight);
       }
     }
 
@@ -336,13 +332,12 @@ void Map::render(sf::RenderWindow &window, sf::Vector2f playerPos) {
           // 0-based)
           int tileId = static_cast<int>(rawId & TILE_MASK) - 1;
 
-          // Skip if invalid or column 0 of any row
+          // Skip if invalid
           if (tileId < 0)
             continue;
           int tileCol = tileId % TILESET_COLS;
           int tileRow = tileId / TILESET_COLS;
-          if (tileCol == 0)
-            continue; // Column 0 = functional tiles, don't render
+          // if (tileCol == 0) continue; // Removed legacy logic
 
           // Calculate texture rect from tileset position
           int texX = tileCol * static_cast<int>(TILE_SIZE);
@@ -538,8 +533,11 @@ Map::checkCollision(const sf::FloatRect &bounds) const {
   for (int y = top_tile; y <= bottom_tile; ++y) {
     for (int x = left_tile; x <= right_tile; ++x) {
       if (y >= 0 && y < mainGrid.size() && x >= 0 && x < mainGrid[y].size()) {
-        // Main layer ID 12 = wall/block (row 2, col 0)
-        if (mainGrid[y][x] == 12) {
+        int id = mainGrid[y][x];
+        // Check functional type (column index)
+        int functionalId = id % TILESET_COLS;
+
+        if (functionalId == TileType::Wall) {
           collisions.push_back(sf::FloatRect({x * TILE_SIZE, y * TILE_SIZE},
                                              {TILE_SIZE, TILE_SIZE}));
         }
@@ -586,8 +584,8 @@ Map::checkPlatformCollision(const sf::FloatRect &bounds) const {
   for (int y = top_tile; y <= bottom_tile; ++y) {
     for (int x = left_tile; x <= right_tile; ++x) {
       if (y >= 0 && y < mainGrid.size() && x >= 0 && x < mainGrid[y].size()) {
-        // Main layer ID 18 = platform (row 3, col 0)
-        if (mainGrid[y][x] == 18) {
+        // Platform IDs
+        if (mainGrid[y][x] == TileType::Platform) {
           platforms.push_back(sf::FloatRect({x * TILE_SIZE, y * TILE_SIZE},
                                             {TILE_SIZE, TILE_SIZE}));
         }

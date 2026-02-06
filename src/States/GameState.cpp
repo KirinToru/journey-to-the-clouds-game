@@ -4,24 +4,18 @@
 #include <iostream>
 
 GameState::GameState(Game *game)
-    : State(game), mCamera({0.f, 0.f}, {640.f, 360.f}), mPlayer(), mMap(),
+    : State(game), mCamera({0.f, 0.f}, {960.f, 540.f}), mPlayer(), mMap(),
       mBackgroundSprite(mBackgroundTexture), mShowHitbox(false),
       mShowFPS(false), mFrameCount(0), mCurrentFPS(0), mResetTimer(0.f),
-      mIsResetting(false) {
+      mIsResetting(false), mCurrentLevelIndex(0) {
 
   mFadeOverlay.setSize({1280, 720}); // Will update in update/render
   mFadeOverlay.setFillColor(sf::Color(0, 0, 0, 0));
 
-  if (!mBackgroundTexture.loadFromFile("assets/backgrounds/bg_bricks.png")) {
-    std::cerr << "Failed to load bg_bricks.png" << std::endl;
-  }
-  mBackgroundTexture.setRepeated(true);
-  mBackgroundSprite.setTexture(mBackgroundTexture, true);
-  mBackgroundSprite.setScale({0.8f, 0.8f});
-
   mFPSFontLoaded = mFPSFont.openFromFile("assets/fonts/font.ttf");
 
-  loadLevel("assets/maps/tutorial.tmx");
+  mLevels = {"assets/maps/tutorial.tmx", "assets/maps/level1.tmx"};
+  loadLevel(mLevels[mCurrentLevelIndex]);
 }
 
 void GameState::loadLevel(const std::string &filename) {
@@ -64,7 +58,7 @@ void GameState::handleInput(sf::Event &event) {
 }
 
 void GameState::update(sf::Time dt) {
-  // Smart Reset Logic (Hold R)
+  // Smart Reset Logic
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
     mResetTimer += dt.asSeconds();
     float cycleTime = 2.0f; // 1s Fade Out + 1s Fade In
@@ -77,10 +71,8 @@ void GameState::update(sf::Time dt) {
 
     float alpha = 0.f;
     if (mResetTimer < 1.0f) {
-      // Phase 1: Fade Out (0 -> 255)
       alpha = (mResetTimer / 1.0f) * 255.f;
     } else {
-      // Phase 2: Fade In (255 -> 0)
       // Check if we need to trigger reset logic (just once per cycle)
       if (!mIsResetting) {
         mPlayer.reset(mMap.getStartPosition());
@@ -98,11 +90,6 @@ void GameState::update(sf::Time dt) {
     // Release R -> Fade back to clear smoothly
     if (mResetTimer > 0.f) {
       if (mResetTimer >= 1.0f && mIsResetting) {
-        // If we are in fade-in phase, just continue fading in (decreasing timer
-        // effectively rewinds fade-in?) Actually, if we release in Phase 2, we
-        // want to go back to 0 alpha. Phase 2 alpha = 255 - (t-1)*255. If we
-        // just decrease timer, we go back towards 1.0 which is BLACK. We want
-        // to go to CLEAR. Logic: If released, linear fade out to clear.
         float currentAlpha = mFadeOverlay.getFillColor().a;
         float fadeSpeed = 500.f; // Alpha per second
         currentAlpha -= fadeSpeed * dt.asSeconds();
@@ -139,8 +126,17 @@ void GameState::update(sf::Time dt) {
 
   // Finish
   if (mMap.checkFinish(mPlayer.getBounds())) {
-    std::cout << "Level Finished! Resetting..." << std::endl;
-    mPlayer.reset(mMap.getStartPosition());
+    std::cout << "Level Finished!" << std::endl;
+
+    // Check if there is a next level
+    if (mCurrentLevelIndex + 1 < mLevels.size()) {
+      mCurrentLevelIndex++;
+      loadLevel(mLevels[mCurrentLevelIndex]);
+    } else {
+      std::cout << "Game Completed! Looping back to start." << std::endl;
+      mCurrentLevelIndex = 0;
+      loadLevel(mLevels[mCurrentLevelIndex]);
+    }
   }
 
   // Camera
@@ -177,26 +173,6 @@ void GameState::update(sf::Time dt) {
 
 void GameState::render(sf::RenderWindow &window) {
   window.setView(mCamera);
-
-  // Background
-  float parallaxFactor = 0.3f;
-  sf::Vector2f cameraCenter = mCamera.getCenter();
-  sf::Vector2f viewSize = mCamera.getSize();
-  float bgScale = mBackgroundSprite.getScale().x;
-
-  int texOffsetX =
-      static_cast<int>((cameraCenter.x * parallaxFactor) / bgScale);
-  int texOffsetY =
-      static_cast<int>((cameraCenter.y * parallaxFactor) / bgScale);
-  int texWidth = static_cast<int>(viewSize.x / bgScale) + 64;
-  int texHeight = static_cast<int>(viewSize.y / bgScale) + 64;
-
-  mBackgroundSprite.setTextureRect(
-      sf::IntRect({texOffsetX, texOffsetY}, {texWidth, texHeight}));
-  mBackgroundSprite.setPosition(
-      {cameraCenter.x - viewSize.x / 2.f, cameraCenter.y - viewSize.y / 2.f});
-
-  window.draw(mBackgroundSprite);
 
   mMap.render(window, mPlayer.getPosition());
   mPlayer.render(window, mShowHitbox);
