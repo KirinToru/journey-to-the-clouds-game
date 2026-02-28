@@ -94,8 +94,8 @@ The executable will be generated in the `build` folder.
 
 For detailed information about the game's design, mechanics, and architecture:
 
-- 📘 **[Game Design Document](docs/GDD.md)** - Full game design specification
-- 🗺️ **[Roadmap](docs/ROADMAP.md)** - Planned features and progress tracking
+- 📘 **[Game Design Document](docs/documentation/GDD.md)** - Full game design specification
+- 🗺️ **[Roadmap](docs/documentation/ROADMAP.md)** - Planned features and progress tracking
 
 ## Generating API Docs (Doxygen)
 
