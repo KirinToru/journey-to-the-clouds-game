@@ -1,0 +1,28 @@
+{
+    "activeFile": "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx": {
+            "scale": 0.8695564516129032,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 495.65499652214237,
+                "y": 494.5049849292836
+            }
+        },
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_main.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_prototype.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx"
+    ],
+    "project": "jttc.tiled-project",
+    "recentFiles": [
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx"
+    ]
+}
