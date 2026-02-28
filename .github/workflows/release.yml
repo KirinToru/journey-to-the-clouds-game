@@ -38,7 +38,7 @@ jobs:
           mkdir release
           Copy-Item build/JourneyToTheClouds.exe release/
           Copy-Item -Recurse assets release/assets
-          Copy-Item dll/*.dll release/
+          Copy-Item lib/*.dll release/
           Compress-Archive -Path release/* -DestinationPath "JourneyToTheClouds-${{ github.ref_name }}-win64.zip"
         shell: pwsh
 
