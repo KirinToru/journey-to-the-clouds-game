@@ -45,13 +45,22 @@
 | Friction | 1200 px/s² |
 | Gravity | 1000 px/s² |
 | Jump Strength | 500 px/s |
+| Dash Speed | 1000 px/s |
 
-### 3.2 Wall Mechanics
+### 3.2 Advanced Mechanics
 
-- **Wall Slide:** Reduces fall speed to 150 px/s when pressing toward a wall
+- **Dash (Shift):** 8-directional burst of speed. Placed on a short cooldown.
+- **Double Jump:** Allows a second jump while mid-air.
+- **Momentum Conservation:** Jumping out of a dash preserves the dash speed. Subsequent well-timed jumps (b-hopping) maintain this high inertia.
+- **Coyote Time:** Player can still jump for a few frames (e.g. 0.1s) after running off a ledge.
+- **Input Buffer:** Jump inputs pressed a few frames before landing are stored and executed exactly on landing.
+
+### 3.3 Wall Mechanics
+
+- **Wall Slide:** Dynamic slide speed. Reduces fall speed when pressing against a wall, but allows acceleration downwards.
 - **Wall Jump:** Launches player away from wall with force (350, 500) px/s
 
-### 3.3 Variable Jump
+### 3.4 Variable Jump
 
 - Holding jump: normal gravity (floaty)
 - Releasing jump early: 2× gravity (short hop)
@@ -80,7 +89,10 @@ Not rendered by default (invisible barriers). Shown in debug mode (F1).
 | 1 | Finish | Level completion trigger (1px trigger edge, rotatable) |
 | 2 | Block | Solid collision (invisible walls) |
 | 3 | Platform | One-way platform (pass-through from below) |
-| 4 | Spikes | Instant death on contact |
+| 4 | Spikes | Static hazard, instant death on contact |
+| 5 | Trampoline | Bounce pad, applies massive upward velocity |
+| 6 | Moving Block| Platform or block that patrols a specific path |
+| 7 | Saw Blade | Dynamic hazard, instakill, follows predefined path |
 
 ### 4.2 Cosmetic Tilesets (e.g. `ts_prototype`)
 
@@ -124,8 +136,9 @@ Support for Tiled object layers:
 | Key | Action |
 |-----|--------|
 | **A / D / ← / →** | Move left / right |
-| **W / Space / ↑** | Jump |
-| **S / ↓** | Drop through platforms |
+| **W / Space / ↑** | Jump / Double Jump |
+| **Shift** | Dash (Directional with movement keys) |
+| **S / ↓** | Drop through platforms / Fast Wall Slide |
 | **R (hold)** | Smart reset (fade out → respawn → fade in) |
 | **Escape** | Pause menu |
 | **F1** | Toggle hitbox display |
@@ -157,10 +170,13 @@ Fixed timestep at 60 FPS (`1/60s` per frame). Accumulator pattern ensures consis
 
 1. Parallax scrolling background (camera-relative offset)
 2. Map tiles (view-culled, only visible tiles rendered)
-3. Player sprite (animated, flippable)
-4. Debug overlays (hitboxes: green for player, purple for spikes)
-5. Fade overlay (for reset transitions)
-6. FPS counter (HUD layer)
+3. Entities (Enemies, moving hazards)
+4. Player sprite (animated, flippable)
+5. Particle Effects & Transient Objects
+6. Screen-Space Shaders (Bloom, CRT, Vignette, Post-processing)
+7. Debug overlays (hitboxes: green for player, purple for traps)
+8. Fade overlay (for reset transitions)
+9. FPS counter (HUD layer)
 
 ### 7.4 Collision System
 
@@ -203,7 +219,28 @@ Smooth lerp-based camera following (`speed = 5.0`). Clamped to map boundaries. P
 
 ---
 
-## 9. Audio (Planned)
+## 9. Enemies & Hazards (Planned)
+
+### 9.1 Hazards
+| Hazard | Description |
+|--------|-------------|
+| **Spikes** | Static hazard. Instant death. |
+| **Saw Blades** | Dynamic spinning blades on tracks. |
+| **Moving Blocks** | Platforms that push or crush the player. |
+| **Boulders** | Physics-enabled falling bodies. |
+| **Trampolines** | Specialized blocks triggering jump momentum. |
+
+### 9.2 Enemies
+| Enemy Type | Behavior |
+|------------|----------|
+| **Patroller** | Walks left-right, turns at ledges. |
+| **Chaser** | Runs towards player when in line of sight. |
+| **Flyer** | Ignores gravity, swoops at player. |
+| **Bosses** | Multi-phase encounters with unique attack patterns. |
+
+---
+
+## 10. Audio (Planned)
 
 | Category | Examples |
 |----------|----------|
@@ -213,7 +250,7 @@ Smooth lerp-based camera following (`speed = 5.0`). Clamped to map boundaries. P
 
 ---
 
-## 10. UI Screens
+## 11. UI Screens
 
 | Screen | Status | Description |
 |--------|--------|-------------|

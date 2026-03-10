@@ -6,7 +6,7 @@
 <p align="center">
 <img src="https://img.shields.io/badge/C++-20-00599C?style=flat-square&logo=c%2B%2B">
 <img src="https://img.shields.io/badge/SFML-v3.0.2-8CC445?logo=SFML&style=flat-square">
-<img src="https://img.shields.io/badge/Platform-Windows-blue?style=flat-square">
+<img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=flat-square">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Source%20Available-informational?style=flat-square"/></a>
 </p>
 
@@ -25,11 +25,15 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 
 ## Features
 
-- 🎮 Physics-based movement with acceleration and friction
-- 🦘 Wall jumping and wall sliding
+- 🎮 Physics-based movement (acceleration, friction, momentum conservation)
+- 💨 Advanced mobility: Multi-directional Dash, Double Jump
+- 🦘 Wall jumping and dynamic wall sliding
+- ⏳ Game feel tools (Coyote time & Input buffering)
 - 🪜 One-way platforms (drop through with S)
 - 🗺️ Dynamic TMX map loading (Tiled editor)
 - ✨ Character animations (idle, walk, run, jump, fall)
+- 💀 Hazards & Enemies (Spikes, Saws, Moving blocks, Trampolines)
+- 💡 Shader & Visual Effects support (Lighting, Particles)
 - 🎯 Debug hitbox visualization (F1)
 - ⏱️ FPS counter (F2)
 - 🖥️ Window mode cycling (F4)
@@ -39,7 +43,8 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 | Key | Action |
 |-----|--------|
 | **A / D** | Move left / right |
-| **W / Space** | Jump |
+| **W / Space** | Jump / Double Jump |
+| **Shift** | Dash |
 | **S** | Drop through platforms |
 | **R (hold)** | Smart reset |
 | **F1** | Toggle hitbox display |
@@ -57,7 +62,7 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 | Compiler | MSVC (Visual Studio 17/18) |
 | Library | SFML 3.0.2 |
 | Renderer | OpenGL (via SFML) |
-| Platform | Windows x64 |
+| Platform | Windows x64, Linux, macOS |
 | Map Editor | Tiled |
 | Art Tools | SpriteFusion, Photoshop |
 | Map Format | TMX (Tiled XML) |
