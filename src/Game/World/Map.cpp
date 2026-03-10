@@ -1,5 +1,6 @@
 #include <Game/World/Map.hpp>
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
