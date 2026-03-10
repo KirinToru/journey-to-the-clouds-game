@@ -1,6 +1,7 @@
 #include <Game/Game.hpp>
 #include <Game/States/GameState.hpp>
 #include <Game/States/PauseState.hpp>
+#include <cmath>
 #include <iostream>
 
 GameState::GameState(Game *game)
