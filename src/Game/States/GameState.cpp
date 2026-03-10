@@ -8,7 +8,8 @@ GameState::GameState(Game *game)
     : State(game), mCamera({0.f, 0.f}, {960.f, 540.f}), mPlayer(), mMap(),
       mBackgroundSprite(mBackgroundTexture), mShowHitbox(false),
       mShowFPS(false), mFrameCount(0), mCurrentFPS(0), mResetTimer(0.f),
-      mIsResetting(false), mCurrentLevelIndex(0) {
+      mIsResetting(false), mDeathPhase(0), mDeathTimer(0.f),
+      mCurrentLevelIndex(0) {
 
   mFadeOverlay.setSize({1280, 720});
   mFadeOverlay.setFillColor(sf::Color(0, 0, 0, 0));
@@ -104,51 +105,142 @@ void GameState::update(sf::Time dt) {
     }
   }
 
-  mPlayer.update(dt.asSeconds(), mMap);
+  // Death Sequence State Machine
+  if (mDeathPhase > 0) {
+    mDeathTimer -= dt.asSeconds();
 
-  // Death from falling below map
-  if (mPlayer.getPosition().y > mMap.getHeight() + 200.f)
-    mPlayer.reset(mMap.getStartPosition());
+    if (mDeathPhase == 1) {
+      // Phase 1: Fade to black + camera moves to death spot (0.4s)
+      float progress = 1.f - (mDeathTimer / 0.4f);
+      progress = std::clamp(progress, 0.f, 1.f);
+      mFadeOverlay.setFillColor(
+          sf::Color(0, 0, 0, static_cast<uint8_t>(progress * 255.f)));
 
-  // Death from spikes
-  if (mMap.checkSpikeCollision(mPlayer.getBounds()))
-    mPlayer.reset(mMap.getStartPosition());
+      // Camera lerps toward death position
+      sf::Vector2f currentCenter = mCamera.getCenter();
+      sf::Vector2f viewSize = mCamera.getSize();
+      float mapW = mMap.getWidth();
+      float mapH = mMap.getHeight();
+      float targetX = std::clamp(mDeathPosition.x, viewSize.x / 2.f,
+                                 mapW - viewSize.x / 2.f);
+      float targetY = std::clamp(mDeathPosition.y, viewSize.y / 2.f,
+                                 mapH - viewSize.y / 2.f);
+      float lerpSpeed = 8.0f;
+      float newX = currentCenter.x +
+                   (targetX - currentCenter.x) * lerpSpeed * dt.asSeconds();
+      float newY = currentCenter.y +
+                   (targetY - currentCenter.y) * lerpSpeed * dt.asSeconds();
+      mCamera.setCenter({std::round(newX), std::round(newY)});
 
-  // Finish
-  if (mMap.checkFinish(mPlayer.getBounds())) {
-    std::cout << "Level Finished!" << std::endl;
-    if (mCurrentLevelIndex + 1 < mLevels.size()) {
-      mCurrentLevelIndex++;
-      loadLevel(mLevels[mCurrentLevelIndex]);
-    } else {
-      std::cout << "Game Completed! Looping back to start." << std::endl;
-      mCurrentLevelIndex = 0;
-      loadLevel(mLevels[mCurrentLevelIndex]);
+      if (mDeathTimer <= 0.f) {
+        mDeathPhase = 2;
+        mDeathTimer = 0.3f;
+        mFadeOverlay.setFillColor(sf::Color(0, 0, 0, 255));
+        mPlayer.reset(mMap.getStartPosition());
+      }
+    } else if (mDeathPhase == 2) {
+      // Phase 2: Hold black, snap camera to player
+      mFadeOverlay.setFillColor(sf::Color(0, 0, 0, 255));
+
+      sf::Vector2f playerPos = mPlayer.getPosition();
+      sf::Vector2f viewSize = mCamera.getSize();
+      float mapW = mMap.getWidth();
+      float mapH = mMap.getHeight();
+      float camX =
+          std::clamp(playerPos.x, viewSize.x / 2.f, mapW - viewSize.x / 2.f);
+      float camY =
+          std::clamp(playerPos.y, viewSize.y / 2.f, mapH - viewSize.y / 2.f);
+      mCamera.setCenter({camX, camY});
+
+      if (mDeathTimer <= 0.f) {
+        mDeathPhase = 3;
+        mDeathTimer = 0.4f;
+      }
+    } else if (mDeathPhase == 3) {
+      // Phase 3: Fade back in
+      float progress = mDeathTimer / 0.4f;
+      progress = std::clamp(progress, 0.f, 1.f);
+      mFadeOverlay.setFillColor(
+          sf::Color(0, 0, 0, static_cast<uint8_t>(progress * 255.f)));
+
+      // Camera follows player
+      sf::Vector2f playerPos = mPlayer.getPosition();
+      sf::Vector2f viewSize = mCamera.getSize();
+      sf::Vector2f currentCenter = mCamera.getCenter();
+      float mapW = mMap.getWidth();
+      float mapH = mMap.getHeight();
+      float targetX = (mapW < viewSize.x)
+                          ? mapW / 2.f
+                          : std::clamp(playerPos.x, viewSize.x / 2.f,
+                                       mapW - viewSize.x / 2.f);
+      float targetY = (mapH < viewSize.y)
+                          ? mapH / 2.f
+                          : std::clamp(playerPos.y, viewSize.y / 2.f,
+                                       mapH - viewSize.y / 2.f);
+      float lerpSpeed = 5.0f;
+      float newX = currentCenter.x +
+                   (targetX - currentCenter.x) * lerpSpeed * dt.asSeconds();
+      float newY = currentCenter.y +
+                   (targetY - currentCenter.y) * lerpSpeed * dt.asSeconds();
+      mCamera.setCenter({std::round(newX), std::round(newY)});
+
+      if (mDeathTimer <= 0.f) {
+        mDeathPhase = 0;
+        mFadeOverlay.setFillColor(sf::Color(0, 0, 0, 0));
+      }
     }
+  } else {
+    // Normal gameplay
+    mPlayer.update(dt.asSeconds(), mMap);
+
+    // Death from falling below map
+    if (mPlayer.getPosition().y > mMap.getHeight() + 200.f) {
+      mDeathPosition = mPlayer.getPosition();
+      mDeathPhase = 1;
+      mDeathTimer = 0.4f;
+    }
+
+    // Death from spikes
+    if (mDeathPhase == 0 && mMap.checkSpikeCollision(mPlayer.getBounds())) {
+      mDeathPosition = mPlayer.getPosition();
+      mDeathPhase = 1;
+      mDeathTimer = 0.4f;
+    }
+
+    // Finish
+    if (mMap.checkFinish(mPlayer.getBounds())) {
+      std::cout << "Level Finished!" << std::endl;
+      if (mCurrentLevelIndex + 1 < mLevels.size()) {
+        mCurrentLevelIndex++;
+        loadLevel(mLevels[mCurrentLevelIndex]);
+      } else {
+        std::cout << "Game Completed! Looping back to start." << std::endl;
+        mCurrentLevelIndex = 0;
+        loadLevel(mLevels[mCurrentLevelIndex]);
+      }
+    }
+
+    // Camera
+    sf::Vector2f playerPos = mPlayer.getPosition();
+    sf::Vector2f viewSize = mCamera.getSize();
+    sf::Vector2f currentCenter = mCamera.getCenter();
+    float mapW = mMap.getWidth();
+    float mapH = mMap.getHeight();
+    float targetX = (mapW < viewSize.x)
+                        ? mapW / 2.f
+                        : std::clamp(playerPos.x, viewSize.x / 2.f,
+                                     mapW - viewSize.x / 2.f);
+    float targetY = (mapH < viewSize.y)
+                        ? mapH / 2.f
+                        : std::clamp(playerPos.y, viewSize.y / 2.f,
+                                     mapH - viewSize.y / 2.f);
+    float lerpSpeed = 5.0f;
+    float newX = currentCenter.x +
+                 (targetX - currentCenter.x) * lerpSpeed * dt.asSeconds();
+    float newY = currentCenter.y +
+                 (targetY - currentCenter.y) * lerpSpeed * dt.asSeconds();
+    mCamera.setCenter({std::round(newX), std::round(newY)});
   }
-
-  // Camera
-  sf::Vector2f playerPos = mPlayer.getPosition();
-  sf::Vector2f viewSize = mCamera.getSize();
-  sf::Vector2f currentCenter = mCamera.getCenter();
-  float mapW = mMap.getWidth();
-  float mapH = mMap.getHeight();
-
-  float targetX =
-      (mapW < viewSize.x)
-          ? mapW / 2.f
-          : std::clamp(playerPos.x, viewSize.x / 2.f, mapW - viewSize.x / 2.f);
-  float targetY =
-      (mapH < viewSize.y)
-          ? mapH / 2.f
-          : std::clamp(playerPos.y, viewSize.y / 2.f, mapH - viewSize.y / 2.f);
-
-  float lerpSpeed = 5.0f;
-  float newX = currentCenter.x +
-               (targetX - currentCenter.x) * lerpSpeed * dt.asSeconds();
-  float newY = currentCenter.y +
-               (targetY - currentCenter.y) * lerpSpeed * dt.asSeconds();
-  mCamera.setCenter({std::round(newX), std::round(newY)});
 }
 
 void GameState::render(sf::RenderWindow &window) {

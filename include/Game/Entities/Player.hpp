@@ -47,6 +47,8 @@ private:
   float dashCooldown;
   float dashCooldownTimer;
   bool isDashing;
+  float dashFreezeDuration; // brief freeze before dash launches
+  float dashFreezeTimer;
   sf::Vector2f dashDirection;
   bool hasAirDash;
 

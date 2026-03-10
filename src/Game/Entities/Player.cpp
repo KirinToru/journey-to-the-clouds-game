@@ -55,6 +55,8 @@ Player::Player() : sprite(texture) {
   dashCooldown = 0.5f;
   dashCooldownTimer = 0.f;
   isDashing = false;
+  dashFreezeTimer = 0.f;
+  dashFreezeDuration = 0.07f; // 70ms freeze at dash start
   hasAirDash = true;
   hasAirJump = false;
   isJumping = false;
@@ -116,49 +118,71 @@ void Player::update(float dt, const Map &map) {
       (isGrounded || hasAirDash)) {
     isDashing = true;
     dashTimer = dashDuration;
+    dashFreezeTimer = dashFreezeDuration; // start freeze phase
     dashCooldownTimer = dashCooldown;
+
+    // Zero velocity during freeze for that "hang" effect
+    velocity = {0.f, 0.f};
 
     // Always consume dash charge when starting a dash
     hasAirDash = false;
 
-    // Determine Dash Direction
+    // Determine Dash Direction (4 cardinal directions only, vertical priority)
     dashDirection = {0.f, 0.f};
-    if (left)
-      dashDirection.x -= 1.f;
-    if (right)
-      dashDirection.x += 1.f;
     if (up)
-      dashDirection.y -= 1.f;
-    if (down)
-      dashDirection.y += 1.f;
+      dashDirection.y = -1.f;
+    else if (down)
+      dashDirection.y = 1.f;
+    else if (left)
+      dashDirection.x = -1.f;
+    else if (right)
+      dashDirection.x = 1.f;
 
     // Default to facing direction if no input
     if (dashDirection.x == 0.f && dashDirection.y == 0.f) {
       dashDirection.x = facingRight ? 1.f : -1.f;
     }
-
-    // Normalize diagonal dash
-    if (dashDirection.x != 0.f && dashDirection.y != 0.f) {
-      dashDirection.x *= 0.7071f;
-      dashDirection.y *= 0.7071f;
-    }
   }
 
   // Handle Action States
   if (isDashing) {
-    dashTimer -= dt;
-    velocity = dashDirection * dashSpeed;
+    // Freeze phase: player hangs in place before launching
+    if (dashFreezeTimer > 0.f) {
+      dashFreezeTimer -= dt;
+      velocity = {0.f, 0.f}; // frozen in the air
 
-    // Maintain momentum after dash
-    currentMaxSpeed = dashSpeed * 0.8f;
+      // Allow direction change during freeze (dash direction buffer)
+      // Cardinal directions only, vertical priority
+      sf::Vector2f newDir = {0.f, 0.f};
+      if (up)
+        newDir.y = -1.f;
+      else if (down)
+        newDir.y = 1.f;
+      else if (left)
+        newDir.x = -1.f;
+      else if (right)
+        newDir.x = 1.f;
 
-    if (dashTimer <= 0.f) {
-      isDashing = false;
-      isJumping = false; // Upward velocity is from dash, not a jump
-      // Reduce y velocity drastically if dashing up/down so it feels less
-      // floaty after
-      if (dashDirection.y < 0.f)
-        velocity.y *= 0.85f;
+      // Only update if player is pressing a direction
+      if (newDir.x != 0.f || newDir.y != 0.f) {
+        dashDirection = newDir;
+      }
+    } else {
+      // Active dash phase
+      dashTimer -= dt;
+      velocity = dashDirection * dashSpeed;
+
+      // Maintain momentum after dash
+      currentMaxSpeed = dashSpeed * 0.8f;
+
+      if (dashTimer <= 0.f) {
+        isDashing = false;
+        isJumping = false; // Upward velocity is from dash, not a jump
+        // Reduce y velocity drastically if dashing up/down so it feels less
+        // floaty after
+        if (dashDirection.y < 0.f)
+          velocity.y *= 0.85f;
+      }
     }
   } else {
     // Horizontal Movement with Acceleration

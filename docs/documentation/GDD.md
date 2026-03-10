@@ -49,12 +49,14 @@
 
 ### 3.2 Advanced Mechanics
 
-- **Dash (Shift/X):** 8-directional burst of speed. Only one dash allowed per air sequence; recharges on ground, wall slide, or jump.
+- **Dash (Shift):** 4-cardinal-direction burst of speed (up/down/left/right, no diagonals). Vertical input takes priority. Only one dash allowed per air sequence; recharges on ground, wall slide, or jump.
+- **Dash Freeze (70ms):** At the start of a dash, the player freezes momentarily in the air before launching. During the freeze, direction can be changed (direction buffer).
 - **Air Jump:** If the player leaves the ground without jumping (e.g. dashing upward or falling off a ledge), they get one free jump in mid-air.
 - **Momentum Conservation:** Jumping out of a dash preserves the dash speed. Speed gradually decays via air friction (60% of ground friction rate).
 - **Air Friction:** Horizontal momentum slowly decays while airborne, preventing infinite dash-speed coasting.
 - **Coyote Time (0.1s):** Player can still jump for a brief window after running off a ledge.
 - **Input Buffer (0.1s):** Jump inputs pressed just before landing are stored and executed exactly on touchdown.
+- **Cinematic Death:** On death, a 3-phase sequence plays: fade to black (0.4s) with camera tracking the death spot → black hold (0.3s) with respawn → fade in (0.4s).
 
 ### 3.3 Wall Mechanics
 
