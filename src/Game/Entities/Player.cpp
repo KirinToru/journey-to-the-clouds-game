@@ -51,12 +51,13 @@ Player::Player() : sprite(texture) {
   coyoteTimer = 0.f;
 
   // Dash
-  dashSpeed = 1200.f;
+  dashSpeed = 750.f;
   dashDuration = 0.15f;
   dashTimer = 0.f;
   dashCooldown = 0.5f;
   dashCooldownTimer = 0.f;
   isDashing = false;
+  hasAirDash = true;
 
   currentMaxSpeed = moveSpeed;
   speedDecay = 700.f;
@@ -75,7 +76,8 @@ void Player::update(float dt, const Map &map) {
 
   if (isGrounded) {
     coyoteTimer = coyoteTime;
-    jumpCount = 0; // reset double jumps
+    jumpCount = 0;     // reset double jumps
+    hasAirDash = true; // reset air dash
     // Gradually reduce max speed back to normal walk speed
     if (currentMaxSpeed > moveSpeed && !isDashing) {
       currentMaxSpeed -= speedDecay * dt;
@@ -109,10 +111,15 @@ void Player::update(float dt, const Map &map) {
   wasJumpPressed = jumpPressed;
 
   // Start Dash
-  if (dashPressed && !isDashing && dashCooldownTimer <= 0.f) {
+  if (dashPressed && !isDashing && dashCooldownTimer <= 0.f &&
+      (isGrounded || hasAirDash)) {
     isDashing = true;
     dashTimer = dashDuration;
     dashCooldownTimer = dashCooldown;
+
+    if (!isGrounded) {
+      hasAirDash = false;
+    }
 
     // Determine Dash Direction
     dashDirection = {0.f, 0.f};
@@ -214,7 +221,8 @@ void Player::update(float dt, const Map &map) {
       // Normal Jump (uses Coyote Time)
       if (coyoteTimer > 0.f) {
         velocity.y = -jumpStrength;
-        jumpCount = 1;     // It consumed a jump
+        jumpCount = 1; // It consumed a jump
+        hasAirDash = true;
         coyoteTimer = 0.f; // Prevent bunny hopping abuse
         jumpBufferTimer = 0.f;
       }
@@ -223,12 +231,14 @@ void Player::update(float dt, const Map &map) {
         velocity.y = -wallJumpForce.y;
         velocity.x = -wallDir * wallJumpForce.x;
         jumpCount = 1;
+        hasAirDash = true;
         jumpBufferTimer = 0.f;
       }
       // Double Jump
       else if (jumpCount > 0 && jumpCount < maxJumps) {
         velocity.y = -jumpStrength; // Reset upward momentum
         jumpCount++;
+        hasAirDash = true;
         jumpBufferTimer = 0.f;
       }
     }

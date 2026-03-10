@@ -41,6 +41,7 @@ private:
   float dashCooldownTimer;
   bool isDashing;
   sf::Vector2f dashDirection;
+  bool hasAirDash;
 
   int jumpCount;
   int maxJumps;
