@@ -62,7 +62,7 @@ jobs:
 
       - name: Download SFML
         run: |
-          wget https://github.com/SFML/SFML/releases/download/3.0.2/SFML-3.0.2-linux-gcc-64-bit.tar.gz -O sfml.tar.gz
+          wget https://github.com/SFML/SFML/releases/download/3.0.2/SFML-3.0.2-Linux.GCC.tar.gz -O sfml.tar.gz
           mkdir -p /opt/SFML
           tar -xzf sfml.tar.gz -C /opt/SFML --strip-components=1
 
@@ -95,7 +95,7 @@ jobs:
 
       - name: Download SFML
         run: |
-          curl -L "https://github.com/SFML/SFML/releases/download/3.0.2/SFML-3.0.2-macOS-clang-arm64.tar.gz" -o sfml.tar.gz
+          curl -L "https://github.com/SFML/SFML/releases/download/3.0.2/SFML-3.0.2-macOS.arm64.tar.gz" -o sfml.tar.gz
           mkdir -p /Users/runner/SFML
           tar -xzf sfml.tar.gz -C /Users/runner/SFML --strip-components=1
 
