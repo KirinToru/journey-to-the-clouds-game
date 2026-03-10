@@ -1,0 +1,33 @@
+[1/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\main.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/main.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\main.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\main.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[2/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\Game.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/Game.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\Game.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\Game.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[3/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\Entities\Player.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/Entities/Player.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\Entities\Player.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\Entities\Player.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[4/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\World\Map.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/World/Map.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\World\Map.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\World\Map.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[5/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\States\GameState.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/States/GameState.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\States\GameState.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\States\GameState.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[6/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\States\MenuState.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/States/MenuState.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\States\MenuState.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\States\MenuState.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[7/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Engine\GUI\Button.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Engine/GUI/Button.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Engine\GUI\Button.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Engine\GUI\Button.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+[8/9] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\States\PauseState.cpp.obj
+FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/States/PauseState.cpp.obj 
+C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\States\PauseState.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\States\PauseState.cpp
+C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+ninja: build stopped: subcommand failed.

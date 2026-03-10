@@ -28,9 +28,32 @@ private:
   float jumpStrength;
 
   float wallSlideSpeed;
+  float fastWallSlideSpeed;
   sf::Vector2f wallJumpForce;
   bool isWallSliding;
   int wallDir;
+
+  // New Mechanics
+  float dashSpeed;
+  float dashDuration;
+  float dashTimer;
+  float dashCooldown;
+  float dashCooldownTimer;
+  bool isDashing;
+  sf::Vector2f dashDirection;
+
+  int jumpCount;
+  int maxJumps;
+
+  float jumpBufferTime;
+  float jumpBufferTimer;
+  bool bufferedJump;
+
+  float coyoteTime;
+  float coyoteTimer;
+
+  float currentMaxSpeed;
+  float speedDecay;
 
   sf::Texture texture;
   sf::Sprite sprite;

@@ -36,117 +36,225 @@ Player::Player() : sprite(texture) {
 
   // Wall mechanics
   wallSlideSpeed = 150.f;
+  fastWallSlideSpeed = 400.f;
   wallJumpForce = {350.f, 500.f};
   isWallSliding = false;
   wallDir = 0;
+
+  // Jump mechanics
+  jumpCount = 0;
+  maxJumps = 2;
+  jumpBufferTime = 0.1f;
+  jumpBufferTimer = 0.f;
+  bufferedJump = false;
+  coyoteTime = 0.1f;
+  coyoteTimer = 0.f;
+
+  // Dash
+  dashSpeed = 1200.f;
+  dashDuration = 0.15f;
+  dashTimer = 0.f;
+  dashCooldown = 0.5f;
+  dashCooldownTimer = 0.f;
+  isDashing = false;
+
+  currentMaxSpeed = moveSpeed;
+  speedDecay = 700.f;
 
   velocity = {0.f, 0.f};
   isGrounded = false;
 }
 
 void Player::update(float dt, const Map &map) {
+  // --- Timers ---
+  if (dashCooldownTimer > 0.f)
+    dashCooldownTimer -= dt;
+
+  if (jumpBufferTimer > 0.f)
+    jumpBufferTimer -= dt;
+
+  if (isGrounded) {
+    coyoteTimer = coyoteTime;
+    jumpCount = 0; // reset double jumps
+    // Gradually reduce max speed back to normal walk speed
+    if (currentMaxSpeed > moveSpeed && !isDashing) {
+      currentMaxSpeed -= speedDecay * dt;
+      if (currentMaxSpeed < moveSpeed)
+        currentMaxSpeed = moveSpeed;
+    }
+  } else {
+    coyoteTimer -= dt;
+  }
+
   // 1. Input Handling & Dynamic Speed (Acceleration/Friction)
   bool left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) ||
               sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
   bool right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) ||
                sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
+  bool up = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ||
+            sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+  bool down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ||
+              sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
+
   bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up);
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C);
+  bool dashPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) ||
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X);
 
-  // Horizontal Movement with Acceleration
-  if (left && !right) {
-    velocity.x -= acceleration * dt;
-  } else if (right && !left) {
-    velocity.x += acceleration * dt;
-  } else {
-    // Friction
-    if (velocity.x > 0) {
-      velocity.x -= friction * dt;
-      if (velocity.x < 0)
-        velocity.x = 0;
-    } else if (velocity.x < 0) {
-      velocity.x += friction * dt;
-      if (velocity.x > 0)
-        velocity.x = 0;
-    }
-  }
-
-  // Cap speed
-  if (velocity.x > moveSpeed)
-    velocity.x = moveSpeed;
-  if (velocity.x < -moveSpeed)
-    velocity.x = -moveSpeed;
-
-  // 2. Wall Detection Logic
-  sf::FloatRect bounds = shape.getGlobalBounds();
-  sf::FloatRect leftCheck = bounds;
-  leftCheck.position.x -= 2.f;
-  sf::FloatRect rightCheck = bounds;
-  rightCheck.position.x += 2.f;
-
-  bool touchingLeft = !map.checkCollision(leftCheck).empty();
-  bool touchingRight = !map.checkCollision(rightCheck).empty();
-
-  // Reset wall state
-  isWallSliding = false;
-  wallDir = 0;
-
-  if (touchingLeft)
-    wallDir = -1;
-  if (touchingRight)
-    wallDir = 1;
-
-  // Wall Slide
-  if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
-    if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
-      isWallSliding = true;
-      velocity.y = wallSlideSpeed;
-    }
-  }
-
-  // 3. Jump and Wall Jump
-  // Only trigger on rising edge (first frame of press)
+  // Buffer the jump input
   bool jumpJustPressed = jumpPressed && !wasJumpPressed;
-
   if (jumpJustPressed) {
-    // Normal Jump
-    if (isGrounded) {
-      velocity.y = -jumpStrength;
-      isGrounded = false;
-    }
-    // Wall Jump
-    else if (isWallSliding || (wallDir != 0 && !isGrounded)) {
-      velocity.y = -wallJumpForce.y;
-      velocity.x = -wallDir * wallJumpForce.x;
-    }
+    jumpBufferTimer = jumpBufferTime;
   }
-
   wasJumpPressed = jumpPressed;
 
-  // 4. Variable Gravity (Dynamic Acceleration) with Gravity Halt at Peak
-  float currentGravity = gravity;
+  // Start Dash
+  if (dashPressed && !isDashing && dashCooldownTimer <= 0.f) {
+    isDashing = true;
+    dashTimer = dashDuration;
+    dashCooldownTimer = dashCooldown;
 
-  // Gravity Halt: near the peak of the jump (velocity close to 0), reduce
-  // gravity
-  const float peakThreshold = 50.f; // velocity range considered "peak"
-  if (std::abs(velocity.y) < peakThreshold && !isGrounded && !isWallSliding) {
-    currentGravity *= 0.7f; // Reduced gravity at peak for floaty feel
-  }
-  // Variable gravity relies on holding the button
-  else if (velocity.y < 0.f && !jumpPressed) {
-    // Rising but button released: heavier gravity (shorter jump)
-    currentGravity *= 2.0f;
-  } else if (velocity.y > 0.f) {
-    // Falling: heavier gravity (fast fall), unless sliding
-    if (!isWallSliding) {
-      currentGravity *= 1.8f;
-    } else {
-      currentGravity = 0; // Handled by slide constant speed
+    // Determine Dash Direction
+    dashDirection = {0.f, 0.f};
+    if (left)
+      dashDirection.x -= 1.f;
+    if (right)
+      dashDirection.x += 1.f;
+    if (up)
+      dashDirection.y -= 1.f;
+    if (down)
+      dashDirection.y += 1.f;
+
+    // Default to facing direction if no input
+    if (dashDirection.x == 0.f && dashDirection.y == 0.f) {
+      dashDirection.x = facingRight ? 1.f : -1.f;
+    }
+
+    // Normalize diagonal dash
+    if (dashDirection.x != 0.f && dashDirection.y != 0.f) {
+      dashDirection.x *= 0.7071f;
+      dashDirection.y *= 0.7071f;
     }
   }
 
-  velocity.y += currentGravity * dt;
+  // Handle Action States
+  if (isDashing) {
+    dashTimer -= dt;
+    velocity = dashDirection * dashSpeed;
+
+    // Maintain momentum after dash
+    currentMaxSpeed = dashSpeed * 0.8f;
+
+    if (dashTimer <= 0.f) {
+      isDashing = false;
+      // Reduce y velocity drastically if dashing up/down so it feels less
+      // floaty after
+      if (dashDirection.y < 0.f)
+        velocity.y *= 0.5f;
+    }
+  } else {
+    // Horizontal Movement with Acceleration
+    if (left && !right) {
+      velocity.x -= acceleration * dt;
+    } else if (right && !left) {
+      velocity.x += acceleration * dt;
+    } else {
+      // Friction
+      if (velocity.x > 0) {
+        velocity.x -= friction * dt;
+        if (velocity.x < 0)
+          velocity.x = 0;
+      } else if (velocity.x < 0) {
+        velocity.x += friction * dt;
+        if (velocity.x > 0)
+          velocity.x = 0;
+      }
+    }
+
+    // Cap speed taking momentum into account
+    if (velocity.x > currentMaxSpeed)
+      velocity.x = currentMaxSpeed;
+    if (velocity.x < -currentMaxSpeed)
+      velocity.x = -currentMaxSpeed;
+
+    // 2. Wall Detection Logic
+    sf::FloatRect bounds = shape.getGlobalBounds();
+    sf::FloatRect leftCheck = bounds;
+    leftCheck.position.x -= 2.f;
+    sf::FloatRect rightCheck = bounds;
+    rightCheck.position.x += 2.f;
+
+    bool touchingLeft = !map.checkCollision(leftCheck).empty();
+    bool touchingRight = !map.checkCollision(rightCheck).empty();
+
+    // Reset wall state
+    isWallSliding = false;
+    wallDir = 0;
+
+    if (touchingLeft)
+      wallDir = -1;
+    if (touchingRight)
+      wallDir = 1;
+
+    // Dynamic Wall Slide
+    if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
+      if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
+        isWallSliding = true;
+        jumpCount = 0; // Reset double jumps when touching wall
+        if (down) {
+          velocity.y = fastWallSlideSpeed;
+        } else {
+          velocity.y = wallSlideSpeed;
+        }
+      }
+    }
+
+    // 3. Jump and Wall Jump
+    if (jumpBufferTimer > 0.f) {
+      // Normal Jump (uses Coyote Time)
+      if (coyoteTimer > 0.f) {
+        velocity.y = -jumpStrength;
+        jumpCount = 1;     // It consumed a jump
+        coyoteTimer = 0.f; // Prevent bunny hopping abuse
+        jumpBufferTimer = 0.f;
+      }
+      // Wall Jump
+      else if (isWallSliding || (wallDir != 0 && !isGrounded)) {
+        velocity.y = -wallJumpForce.y;
+        velocity.x = -wallDir * wallJumpForce.x;
+        jumpCount = 1;
+        jumpBufferTimer = 0.f;
+      }
+      // Double Jump
+      else if (jumpCount > 0 && jumpCount < maxJumps) {
+        velocity.y = -jumpStrength; // Reset upward momentum
+        jumpCount++;
+        jumpBufferTimer = 0.f;
+      }
+    }
+
+    // 4. Variable Gravity (Dynamic Acceleration) with Gravity Halt at Peak
+    float currentGravity = gravity;
+
+    // Gravity Halt: near the peak of the jump (velocity close to 0), reduce
+    // gravity
+    const float peakThreshold = 50.f;
+    if (std::abs(velocity.y) < peakThreshold && !isGrounded && !isWallSliding) {
+      currentGravity *= 0.7f;
+    }
+    // Variable gravity relies on holding the button
+    else if (velocity.y < 0.f && !jumpPressed) {
+      currentGravity *= 2.0f;
+    } else if (velocity.y > 0.f) {
+      if (!isWallSliding) {
+        currentGravity *= 1.8f;
+      } else {
+        currentGravity = 0;
+      }
+    }
+
+    velocity.y += currentGravity * dt;
+  }
 
   // 5. Physics & Collision Resolution
 
