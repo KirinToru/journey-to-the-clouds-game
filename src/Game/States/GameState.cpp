@@ -197,7 +197,8 @@ void GameState::render(sf::RenderWindow &window) {
     fpsText.setOutlineColor(sf::Color::Black);
     fpsText.setOutlineThickness(1.f);
     float textWidth = fpsText.getLocalBounds().size.x;
-    fpsText.setPosition({window.getSize().x - textWidth - 10.f, 10.f});
+    fpsText.setPosition(
+        {window.getDefaultView().getSize().x - textWidth - 10.f, 10.f});
     window.draw(fpsText);
   }
 }

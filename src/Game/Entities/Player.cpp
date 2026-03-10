@@ -157,7 +157,7 @@ void Player::update(float dt, const Map &map) {
       // Reduce y velocity drastically if dashing up/down so it feels less
       // floaty after
       if (dashDirection.y < 0.f)
-        velocity.y *= 0.5f;
+        velocity.y *= 0.85f;
     }
   } else {
     // Horizontal Movement with Acceleration
@@ -235,9 +235,14 @@ void Player::update(float dt, const Map &map) {
         jumpBufferTimer = 0.f;
       }
       // Double Jump
-      else if (jumpCount > 0 && jumpCount < maxJumps) {
+      else if (jumpCount < maxJumps) {
         velocity.y = -jumpStrength; // Reset upward momentum
-        jumpCount++;
+
+        // If they fall off a ledge / dashed up from ground, jumpCount is 0,
+        // so consume their ground jump and first air jump to prevent infinite
+        // jumps.
+        jumpCount = (jumpCount == 0) ? 2 : jumpCount + 1;
+
         hasAirDash = true;
         jumpBufferTimer = 0.f;
       }
