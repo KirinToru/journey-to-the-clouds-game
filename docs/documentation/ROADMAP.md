@@ -38,10 +38,9 @@
 | 1.2 | Variable jump height | ✅ |
 | 1.3 | Wall jump & Wall slide (Dynamic slide speed) | 🔶 |
 | 1.4 | Anti-snagging, corner correction, sub-pixel jitter fix | ✅ |
-| 1.5 | Dash (Shift, multidirectional) | ⬜ |
-| 1.6 | Double Jump | ⬜ |
-| 1.7 | Momentum Conservation (Dash -> Jump) | ⬜ |
-| 1.8 | Input Buffering & Coyote Time | ⬜ |
+| 1.5 | Dash (Shift, multidirectional, single air dash) | ⬜ |
+| 1.6 | Momentum Conservation (Dash -> Jump) | ⬜ |
+| 1.7 | Input Buffering & Coyote Time | ⬜ |
 
 ## Milestone 2: Level Loading & World ✅
 

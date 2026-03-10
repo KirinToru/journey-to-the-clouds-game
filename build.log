@@ -1,5 +1,0 @@
-[1/5] Building CXX object CMakeFiles\JourneyToTheClouds.dir\src\Game\Entities\Player.cpp.obj
-FAILED: CMakeFiles/JourneyToTheClouds.dir/src/Game/Entities/Player.cpp.obj 
-C:\PROGRA~1\MICROS~1\18\COMMUN~1\VC\Tools\MSVC\1450~1.357\bin\Hostx64\x64\cl.exe  /nologo /TP  -IC:\Users\Kirin\source\repos\journey-to-the-clouds-game\include -external:IC:\SFML-3.0.2\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /Zc:__cplusplus /showIncludes /FoCMakeFiles\JourneyToTheClouds.dir\src\Game\Entities\Player.cpp.obj /FdCMakeFiles\JourneyToTheClouds.dir\ /FS -c C:\Users\Kirin\source\repos\journey-to-the-clouds-game\src\Game\Entities\Player.cpp
-C:\SFML-3.0.2\include\SFML/Graphics/Color.hpp(30): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
-ninja: build stopped: subcommand failed.

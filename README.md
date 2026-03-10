@@ -26,7 +26,7 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 ## Features
 
 - 🎮 Physics-based movement (acceleration, friction, momentum conservation)
-- 💨 Advanced mobility: Multi-directional Dash, Double Jump
+- 💨 Advanced mobility: Multi-directional Dash, limited to a single use in the air
 - 🦘 Wall jumping and dynamic wall sliding
 - ⏳ Game feel tools (Coyote time & Input buffering)
 - 🪜 One-way platforms (drop through with S)

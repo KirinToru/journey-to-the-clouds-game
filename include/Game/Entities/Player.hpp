@@ -43,9 +43,6 @@ private:
   sf::Vector2f dashDirection;
   bool hasAirDash;
 
-  int jumpCount;
-  int maxJumps;
-
   float jumpBufferTime;
   float jumpBufferTimer;
   bool bufferedJump;

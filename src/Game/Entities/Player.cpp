@@ -42,8 +42,6 @@ Player::Player() : sprite(texture) {
   wallDir = 0;
 
   // Jump mechanics
-  jumpCount = 0;
-  maxJumps = 2;
   jumpBufferTime = 0.1f;
   jumpBufferTimer = 0.f;
   bufferedJump = false;
@@ -76,7 +74,6 @@ void Player::update(float dt, const Map &map) {
 
   if (isGrounded) {
     coyoteTimer = coyoteTime;
-    jumpCount = 0;     // reset double jumps
     hasAirDash = true; // reset air dash
     // Gradually reduce max speed back to normal walk speed
     if (currentMaxSpeed > moveSpeed && !isDashing) {
@@ -207,7 +204,6 @@ void Player::update(float dt, const Map &map) {
     if (wallDir != 0 && velocity.y > 0 && !isGrounded) {
       if ((wallDir == -1 && left) || (wallDir == 1 && right)) {
         isWallSliding = true;
-        jumpCount = 0; // Reset double jumps when touching wall
         if (down) {
           velocity.y = fastWallSlideSpeed;
         } else {
@@ -221,7 +217,6 @@ void Player::update(float dt, const Map &map) {
       // Normal Jump (uses Coyote Time)
       if (coyoteTimer > 0.f) {
         velocity.y = -jumpStrength;
-        jumpCount = 1; // It consumed a jump
         hasAirDash = true;
         coyoteTimer = 0.f; // Prevent bunny hopping abuse
         jumpBufferTimer = 0.f;
@@ -230,19 +225,6 @@ void Player::update(float dt, const Map &map) {
       else if (isWallSliding || (wallDir != 0 && !isGrounded)) {
         velocity.y = -wallJumpForce.y;
         velocity.x = -wallDir * wallJumpForce.x;
-        jumpCount = 1;
-        hasAirDash = true;
-        jumpBufferTimer = 0.f;
-      }
-      // Double Jump
-      else if (jumpCount < maxJumps) {
-        velocity.y = -jumpStrength; // Reset upward momentum
-
-        // If they fall off a ledge / dashed up from ground, jumpCount is 0,
-        // so consume their ground jump and first air jump to prevent infinite
-        // jumps.
-        jumpCount = (jumpCount == 0) ? 2 : jumpCount + 1;
-
         hasAirDash = true;
         jumpBufferTimer = 0.f;
       }
