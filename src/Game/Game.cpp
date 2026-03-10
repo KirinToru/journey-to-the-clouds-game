@@ -71,8 +71,12 @@ void Game::processEvents() {
       mWindow.close();
 
     if (const auto *keyPress = event->getIf<sf::Event::KeyPressed>()) {
-      if (keyPress->code == sf::Keyboard::Key::F4)
-        cycleWindowMode();
+      if (keyPress->code == sf::Keyboard::Key::F4) {
+        if (keyPress->alt)
+          mWindow.close(); // Alt+F4 closes the game
+        else
+          cycleWindowMode(); // F4 alone cycles window mode
+      }
     }
 
     if (!mStates.empty()) {

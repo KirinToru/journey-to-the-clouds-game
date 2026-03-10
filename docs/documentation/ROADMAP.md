@@ -30,17 +30,19 @@
 | 0.4 | Initial state machine (Game/Menu/Pause) | ✅ |
 | 0.5 | Multiplatform Support (Linux, macOS) | ✅ |
 
-## Milestone 1: Core Movement 🔶
+## Milestone 1: Core Movement ✅
 
 | # | Task | Status |
 |---|------|--------|
 | 1.1 | Physics-based movement (acceleration, friction, gravity) | ✅ |
 | 1.2 | Variable jump height | ✅ |
-| 1.3 | Wall jump & Wall slide (Dynamic slide speed) | 🔶 |
+| 1.3 | Wall jump & Wall slide (Dynamic slide speed) | ✅ |
 | 1.4 | Anti-snagging, corner correction, sub-pixel jitter fix | ✅ |
-| 1.5 | Dash (Shift, multidirectional, single air dash) | ⬜ |
-| 1.6 | Momentum Conservation (Dash -> Jump) | ⬜ |
-| 1.7 | Input Buffering & Coyote Time | ⬜ |
+| 1.5 | Dash (Shift, multidirectional, single air dash + air jump) | ✅ |
+| 1.6 | Momentum Conservation (Dash -> Jump) & Air Friction | ✅ |
+| 1.7 | Input Buffering & Coyote Time | ✅ |
+| 1.8 | Developer HUD (FPS, velocity, state, dash status) | ✅ |
+| 1.9 | Alt+F4, window maximize menu fix | ✅ |
 
 ## Milestone 2: Level Loading & World ✅
 

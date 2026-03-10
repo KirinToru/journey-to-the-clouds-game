@@ -190,15 +190,97 @@ void GameState::render(sf::RenderWindow &window) {
 
   if (mShowFPS && mFPSFontLoaded) {
     window.setView(window.getDefaultView());
+
+    // 1. FPS Text
     sf::Text fpsText(mFPSFont);
-    fpsText.setString(std::to_string(mCurrentFPS));
-    fpsText.setCharacterSize(16);
-    fpsText.setFillColor(sf::Color::Green);
+    fpsText.setString("FPS: " + std::to_string(mCurrentFPS));
+    fpsText.setCharacterSize(14);
+
+    sf::Color fpsColor;
+    if (mCurrentFPS >= 60) {
+      fpsColor = sf::Color::Green;
+    } else if (mCurrentFPS >= 30) {
+      float factor = (mCurrentFPS - 30.f) / 30.f;
+      fpsColor =
+          sf::Color(static_cast<unsigned char>(255.f * (1.f - factor)), 255, 0);
+    } else {
+      float factor = std::max(0.f, mCurrentFPS / 30.f);
+      fpsColor = sf::Color(255, static_cast<unsigned char>(255.f * factor), 0);
+    }
+    fpsText.setFillColor(fpsColor);
     fpsText.setOutlineColor(sf::Color::Black);
-    fpsText.setOutlineThickness(1.f);
-    float textWidth = fpsText.getLocalBounds().size.x;
-    fpsText.setPosition(
-        {window.getDefaultView().getSize().x - textWidth - 10.f, 10.f});
+    fpsText.setOutlineThickness(1.5f);
+    fpsText.setPosition({10.f, 10.f});
     window.draw(fpsText);
+
+    // 2. Hitboxes Text
+    sf::Text hitboxText(mFPSFont);
+    hitboxText.setString("Hitboxes: " +
+                         std::string(mShowHitbox ? "ON" : "OFF"));
+    hitboxText.setCharacterSize(14);
+    hitboxText.setFillColor(mShowHitbox ? sf::Color::Green : sf::Color::Red);
+    hitboxText.setOutlineColor(sf::Color::Black);
+    hitboxText.setOutlineThickness(1.5f);
+    hitboxText.setPosition({10.f, fpsText.getPosition().y +
+                                      fpsText.getGlobalBounds().size.y + 5.f});
+    window.draw(hitboxText);
+
+    // 3 & 4. Main Stats (Screen Mode, Velocity)
+    std::ostringstream hudText;
+    int wMode = mGame->getWindowMode();
+    hudText << "Screen Mode: "
+            << (wMode == 0 ? "Windowed"
+                           : (wMode == 1 ? "Maximized" : "Fullscreen"))
+            << "\n";
+    sf::Vector2f vel = mPlayer.getVelocity();
+    hudText << std::fixed << std::setprecision(1);
+    hudText << "Velocity: X=" << vel.x << " Y=" << vel.y;
+
+    sf::Text statsText(mFPSFont);
+    statsText.setString(hudText.str());
+    statsText.setCharacterSize(14);
+    statsText.setFillColor(sf::Color::White);
+    statsText.setOutlineColor(sf::Color::Black);
+    statsText.setOutlineThickness(1.5f);
+    statsText.setPosition({10.f, hitboxText.getPosition().y +
+                                     hitboxText.getGlobalBounds().size.y +
+                                     5.f});
+    window.draw(statsText);
+
+    // 5. Dash Ready Text
+    bool dashReady = mPlayer.getDashCooldownTimer() <= 0.f &&
+                     (mPlayer.getIsGrounded() || mPlayer.getHasAirDash());
+
+    sf::Text dashText(mFPSFont);
+    dashText.setString("Dash Ready: " + std::string(dashReady ? "YES" : "NO"));
+    dashText.setCharacterSize(14);
+    dashText.setFillColor(dashReady ? sf::Color::Green : sf::Color::Red);
+    dashText.setOutlineColor(sf::Color::Black);
+    dashText.setOutlineThickness(1.5f);
+    dashText.setPosition({10.f, statsText.getPosition().y +
+                                    statsText.getGlobalBounds().size.y + 5.f});
+    window.draw(dashText);
+
+    // 6. Player State Text
+    std::string stateStr = "Idle";
+    if (mPlayer.getIsDashing())
+      stateStr = "Dash";
+    else if (!mPlayer.getIsGrounded()) {
+      if (mPlayer.getIsWallSliding())
+        stateStr = "Wall Slide";
+      else
+        stateStr = "Jump/Fall";
+    } else if (std::abs(vel.x) > 0.1f)
+      stateStr = "Run";
+
+    sf::Text stateText(mFPSFont);
+    stateText.setString("State: " + stateStr);
+    stateText.setCharacterSize(14);
+    stateText.setFillColor(sf::Color::Cyan);
+    stateText.setOutlineColor(sf::Color::Black);
+    stateText.setOutlineThickness(1.5f);
+    stateText.setPosition({10.f, dashText.getPosition().y +
+                                     dashText.getGlobalBounds().size.y + 5.f});
+    window.draw(stateText);
   }
 }

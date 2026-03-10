@@ -56,6 +56,8 @@ Player::Player() : sprite(texture) {
   dashCooldownTimer = 0.f;
   isDashing = false;
   hasAirDash = true;
+  hasAirJump = false;
+  isJumping = false;
 
   currentMaxSpeed = moveSpeed;
   speedDecay = 700.f;
@@ -75,14 +77,18 @@ void Player::update(float dt, const Map &map) {
   if (isGrounded) {
     coyoteTimer = coyoteTime;
     hasAirDash = true; // reset air dash
-    // Gradually reduce max speed back to normal walk speed
-    if (currentMaxSpeed > moveSpeed && !isDashing) {
-      currentMaxSpeed -= speedDecay * dt;
-      if (currentMaxSpeed < moveSpeed)
-        currentMaxSpeed = moveSpeed;
-    }
+    hasAirJump = true; // reset air jump
   } else {
     coyoteTimer -= dt;
+  }
+
+  // Gradually reduce max speed back to normal walk speed (momentum decay)
+  if (currentMaxSpeed > moveSpeed && !isDashing) {
+    // Air friction is slightly lower than ground friction for game feel
+    float currentDecay = isGrounded ? speedDecay : (speedDecay * 0.6f);
+    currentMaxSpeed -= currentDecay * dt;
+    if (currentMaxSpeed < moveSpeed)
+      currentMaxSpeed = moveSpeed;
   }
 
   // 1. Input Handling & Dynamic Speed (Acceleration/Friction)
@@ -95,10 +101,8 @@ void Player::update(float dt, const Map &map) {
   bool down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ||
               sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
 
-  bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C);
-  bool dashPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) ||
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Key::X);
+  bool jumpPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+  bool dashPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift);
 
   // Buffer the jump input
   bool jumpJustPressed = jumpPressed && !wasJumpPressed;
@@ -114,9 +118,8 @@ void Player::update(float dt, const Map &map) {
     dashTimer = dashDuration;
     dashCooldownTimer = dashCooldown;
 
-    if (!isGrounded) {
-      hasAirDash = false;
-    }
+    // Always consume dash charge when starting a dash
+    hasAirDash = false;
 
     // Determine Dash Direction
     dashDirection = {0.f, 0.f};
@@ -151,6 +154,7 @@ void Player::update(float dt, const Map &map) {
 
     if (dashTimer <= 0.f) {
       isDashing = false;
+      isJumping = false; // Upward velocity is from dash, not a jump
       // Reduce y velocity drastically if dashing up/down so it feels less
       // floaty after
       if (dashDirection.y < 0.f)
@@ -218,15 +222,26 @@ void Player::update(float dt, const Map &map) {
       if (coyoteTimer > 0.f) {
         velocity.y = -jumpStrength;
         hasAirDash = true;
+        isJumping = true;
         coyoteTimer = 0.f; // Prevent bunny hopping abuse
         jumpBufferTimer = 0.f;
+        hasAirJump = false; // Consumed ground jump
       }
       // Wall Jump
       else if (isWallSliding || (wallDir != 0 && !isGrounded)) {
         velocity.y = -wallJumpForce.y;
         velocity.x = -wallDir * wallJumpForce.x;
         hasAirDash = true;
+        isJumping = true;
         jumpBufferTimer = 0.f;
+        hasAirJump = false; // Consumed jump
+      }
+      // Air Jump (from falling or dashing)
+      else if (hasAirJump) {
+        velocity.y = -jumpStrength;
+        isJumping = true;
+        jumpBufferTimer = 0.f;
+        hasAirJump = false; // Consumed air jump
       }
     }
 
@@ -239,8 +254,9 @@ void Player::update(float dt, const Map &map) {
     if (std::abs(velocity.y) < peakThreshold && !isGrounded && !isWallSliding) {
       currentGravity *= 0.7f;
     }
-    // Variable gravity relies on holding the button
-    else if (velocity.y < 0.f && !jumpPressed) {
+    // Variable gravity relies on holding the button (only for jumps, not
+    // dashes)
+    else if (velocity.y < 0.f && (!jumpPressed || !isJumping)) {
       currentGravity *= 2.0f;
     } else if (velocity.y > 0.f) {
       if (!isWallSliding) {

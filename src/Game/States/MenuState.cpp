@@ -23,11 +23,10 @@ MenuState::MenuState(Game *game)
 }
 
 void MenuState::updateLayout() {
-  sf::Vector2u windowSize = mGame->getWindow().getSize();
-  mLastWindowSize = windowSize;
+  sf::Vector2f viewSize = mGame->getWindow().getDefaultView().getSize();
 
-  float centerX = windowSize.x / 2.f;
-  float centerY = windowSize.y / 2.f;
+  float centerX = viewSize.x / 2.f;
+  float centerY = viewSize.y / 2.f;
 
   if (mButtons.size() >= 2) {
     mButtons[0].setPosition({centerX, centerY - 50.f});
@@ -103,9 +102,8 @@ void MenuState::update(sf::Time dt) {
 }
 
 void MenuState::render(sf::RenderWindow &window) {
-  sf::Vector2f size(static_cast<float>(window.getSize().x),
-                    static_cast<float>(window.getSize().y));
-  window.setView(sf::View(sf::FloatRect({0, 0}, size)));
+  window.setView(window.getDefaultView());
+  sf::Vector2f size = window.getDefaultView().getSize();
   window.clear(sf::Color::Black);
 
   mBackgroundSprite.setTextureRect(

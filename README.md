@@ -26,30 +26,34 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 ## Features
 
 - 🎮 Physics-based movement (acceleration, friction, momentum conservation)
-- 💨 Advanced mobility: Multi-directional Dash, limited to a single use in the air
+- 💨 Advanced mobility: Multi-directional Dash
 - 🦘 Wall jumping and dynamic wall sliding
 - ⏳ Game feel tools (Coyote time & Input buffering)
+- 🌬️ Air friction (gradual speed decay while airborne)
 - 🪜 One-way platforms (drop through with S)
 - 🗺️ Dynamic TMX map loading (Tiled editor)
 - ✨ Character animations (idle, walk, run, jump, fall)
 - 💀 Hazards & Enemies (Spikes, Saws, Moving blocks, Trampolines)
 - 💡 Shader & Visual Effects support (Lighting, Particles)
 - 🎯 Debug hitbox visualization (F1)
-- ⏱️ FPS counter (F2)
+- 📊 Developer HUD with color-coded stats (F2)
 - 🖥️ Window mode cycling (F4)
+- ⌨️ Alt+F4 to close game
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
 | **A / D** | Move left / right |
-| **W / Space** | Jump / Double Jump |
+| **W** | Look / Dash up |
+| **Space** | Jump |
 | **Shift** | Dash |
-| **S** | Drop through platforms |
+| **S** | Drop through platforms / Fast wall slide |
 | **R (hold)** | Smart reset |
 | **F1** | Toggle hitbox display |
-| **F2** | Toggle FPS display |
+| **F2** | Toggle Developer HUD |
 | **F4** | Cycle window mode |
+| **Alt+F4** | Close game |
 | **Esc** | Pause / Exit |
 
 ## Tech Stack

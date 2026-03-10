@@ -19,6 +19,7 @@ public:
   void clearStatesAndPush(std::unique_ptr<State> state);
 
   const sf::RenderWindow &getWindow() const { return mWindow; }
+  int getWindowMode() const { return mWindowMode; }
 
   void cycleWindowMode();
 

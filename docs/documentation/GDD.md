@@ -45,15 +45,16 @@
 | Friction | 1200 px/s² |
 | Gravity | 1000 px/s² |
 | Jump Strength | 500 px/s |
-| Dash Speed | 1000 px/s |
+| Dash Speed | 750 px/s |
 
 ### 3.2 Advanced Mechanics
 
-- **Dash (Shift):** 8-directional burst of speed. Placed on a short cooldown.
-- **Double Jump:** Allows a second jump while mid-air.
-- **Momentum Conservation:** Jumping out of a dash preserves the dash speed. Subsequent well-timed jumps (b-hopping) maintain this high inertia.
-- **Coyote Time:** Player can still jump for a few frames (e.g. 0.1s) after running off a ledge.
-- **Input Buffer:** Jump inputs pressed a few frames before landing are stored and executed exactly on landing.
+- **Dash (Shift/X):** 8-directional burst of speed. Only one dash allowed per air sequence; recharges on ground, wall slide, or jump.
+- **Air Jump:** If the player leaves the ground without jumping (e.g. dashing upward or falling off a ledge), they get one free jump in mid-air.
+- **Momentum Conservation:** Jumping out of a dash preserves the dash speed. Speed gradually decays via air friction (60% of ground friction rate).
+- **Air Friction:** Horizontal momentum slowly decays while airborne, preventing infinite dash-speed coasting.
+- **Coyote Time (0.1s):** Player can still jump for a brief window after running off a ledge.
+- **Input Buffer (0.1s):** Jump inputs pressed just before landing are stored and executed exactly on touchdown.
 
 ### 3.3 Wall Mechanics
 
@@ -136,14 +137,16 @@ Support for Tiled object layers:
 | Key | Action |
 |-----|--------|
 | **A / D / ← / →** | Move left / right |
-| **W / Space / ↑** | Jump / Double Jump |
+| **W / ↑** | Dash up |
+| **Space** | Jump |
 | **Shift** | Dash (Directional with movement keys) |
 | **S / ↓** | Drop through platforms / Fast Wall Slide |
-| **R (hold)** | Smart reset (fade out → respawn → fade in) |
+| **R (hold)** | Reset |
 | **Escape** | Pause menu |
 | **F1** | Toggle hitbox display |
-| **F2** | Toggle FPS counter |
+| **F2** | Toggle Developer HUD (FPS, velocity, state, dash) |
 | **F4** | Cycle window mode (Windowed → Maximized → Fullscreen) |
+| **Alt+F4** | Close game |
 
 ---
 
@@ -176,7 +179,7 @@ Fixed timestep at 60 FPS (`1/60s` per frame). Accumulator pattern ensures consis
 6. Screen-Space Shaders (Bloom, CRT, Vignette, Post-processing)
 7. Debug overlays (hitboxes: green for player, purple for traps)
 8. Fade overlay (for reset transitions)
-9. FPS counter (HUD layer)
+9. Developer HUD (FPS with color gradient, hitbox status, screen mode, velocity, dash readiness, player state)
 
 ### 7.4 Collision System
 

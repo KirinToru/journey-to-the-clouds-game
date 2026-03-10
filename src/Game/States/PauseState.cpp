@@ -9,8 +9,8 @@ PauseState::PauseState(Game *game)
   if (!mFont.openFromFile("assets/fonts/font.ttf"))
     std::cerr << "Failed to load font in PauseState!" << std::endl;
 
-  sf::Vector2u windowSize = mGame->getWindow().getSize();
-  mBackground.setSize(static_cast<sf::Vector2f>(windowSize));
+  sf::Vector2f viewSize = mGame->getWindow().getDefaultView().getSize();
+  mBackground.setSize(viewSize);
   mBackground.setFillColor(sf::Color(0, 0, 0, 150));
 
   mPauseText.setFont(mFont);
@@ -18,8 +18,7 @@ PauseState::PauseState(Game *game)
   mPauseText.setCharacterSize(50);
   sf::FloatRect textBounds = mPauseText.getLocalBounds();
   mPauseText.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
-  mPauseText.setPosition({static_cast<float>(windowSize.x) / 2.f,
-                          static_cast<float>(windowSize.y) / 4.f});
+  mPauseText.setPosition({viewSize.x / 2.f, viewSize.y / 4.f});
 
   mButtons.emplace_back(mFont, "Continue", sf::Vector2f{0, 0});
   mButtons.emplace_back(mFont, "Restart", sf::Vector2f{0, 0});
@@ -30,11 +29,11 @@ PauseState::PauseState(Game *game)
 }
 
 void PauseState::updateLayout() {
-  sf::Vector2u windowSize = mGame->getWindow().getSize();
-  mBackground.setSize(static_cast<sf::Vector2f>(windowSize));
+  sf::Vector2f viewSize = mGame->getWindow().getDefaultView().getSize();
+  mBackground.setSize(viewSize);
 
-  float centerX = windowSize.x / 2.f;
-  float centerY = windowSize.y / 2.f;
+  float centerX = viewSize.x / 2.f;
+  float centerY = viewSize.y / 2.f;
 
   if (mButtons.size() >= 3) {
     mButtons[0].setPosition({centerX, centerY - 40.f});

@@ -15,6 +15,13 @@ public:
   sf::Vector2f getVelocity() const { return velocity; }
   sf::FloatRect getBounds() const { return shape.getGlobalBounds(); }
 
+  // State Getters for HUD
+  bool getIsGrounded() const { return isGrounded; }
+  bool getIsDashing() const { return isDashing; }
+  bool getIsWallSliding() const { return isWallSliding; }
+  bool getHasAirDash() const { return hasAirDash; }
+  float getDashCooldownTimer() const { return dashCooldownTimer; }
+
 private:
   sf::RectangleShape shape;
 
@@ -42,6 +49,9 @@ private:
   bool isDashing;
   sf::Vector2f dashDirection;
   bool hasAirDash;
+
+  bool hasAirJump;
+  bool isJumping; // true when upward velocity comes from a jump, not a dash
 
   float jumpBufferTime;
   float jumpBufferTimer;
