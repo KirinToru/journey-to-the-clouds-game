@@ -4,14 +4,15 @@
     ],
     "fileStates": {
         "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx": {
-            "scale": 0.8695564516129032,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 495.65499652214237,
-                "y": 495.079990725713
+                "x": 3659,
+                "y": 1501
             }
         },
         "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_bricks.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_main.tsx": {
@@ -27,8 +28,8 @@
     ],
     "project": "jttc.tiled-project",
     "recentFiles": [
-        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_bricks.tsx",
-        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx"
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/maps/test.tmx",
+        "C:/Users/Kirin/source/repos/journey-to-the-clouds-game/assets/tilesets/ts_bricks.tsx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

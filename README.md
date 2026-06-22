@@ -2,7 +2,7 @@
   <img src="assets/logo.png" alt="Journey to the Clouds" height="100px"/>
 </p>
 <h1 align="center">Journey to the Clouds</h1>
-<h3 align="center">A 2D platformer game built with SFML</h3>
+<h3 align="center">A 2D Hide-and-Seek Physics Sandbox with Q-Learning AI</h3>
 <p align="center">
 <img src="https://img.shields.io/badge/C++-20-00599C?style=flat-square&logo=c%2B%2B">
 <img src="https://img.shields.io/badge/SFML-v3.0.2-8CC445?logo=SFML&style=flat-square">
@@ -10,7 +10,7 @@
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Source%20Available-informational?style=flat-square"/></a>
 </p>
 
-Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who leaves Hell to reach Heaven. Built with C++20 and SFML 3.0.2.
+Journey to the Clouds is a 2D Tag (Hide-and-Seek) game focusing on stealth, custom rigid body physics, and a self-learning AI antagonist powered by Q-Learning. Built entirely from scratch with C++20 and SFML 3.0.2.
 
 ### Contents
 
@@ -25,19 +25,9 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 
 ## Features
 
-- 🎮 Physics-based movement (acceleration, friction, momentum conservation)
-- 💨 4-direction Dash with freeze & direction buffer
-- 🦘 Wall jumping and dynamic wall sliding
-- ⏳ Game feel tools (Coyote time & Input buffering)
-- 🌬️ Air friction (gradual speed decay while airborne)
-- 💀 Cinematic death sequence (fade out → respawn → fade in)
-- 🪜 One-way platforms (drop through with S)
-- 🗺️ Dynamic TMX map loading (Tiled editor)
-- ✨ Character animations (idle, walk, run, jump, fall)
-- 🎯 Debug hitbox visualization (F1)
-- 📊 Developer HUD with color-coded stats (F2)
-- 🖥️ Window mode cycling (F4)
-- ⌨️ Alt+F4 to close game
+- **Custom Physics Engine:** Rigid body dynamics, rotation, and collisions built from scratch.
+- **Q-Learning AI:** A smart monster that learns and adapts to catch the player using Reinforcement Learning.
+- **Hide-and-Seek Mechanics:** Line of Sight, memory-based searching, and physical object manipulation to hide.
 
 ## Controls
 
@@ -60,14 +50,14 @@ Journey to the Clouds is a 2D platformer where you play as **Grim**, a demon who
 | Category | Tool |
 |----------|------|
 | Standard | C++20 |
-| IDE | Visual Studio Code, Google Antigravity |
+| IDE | Visual Studio Code, Antigravity IDE |
 | Build System | CMake 4.2.1 |
 | Compiler | MSVC (Visual Studio 17/18) |
 | Library | SFML 3.0.2 |
 | Renderer | OpenGL (via SFML) |
 | Platform | Windows x64, Linux, macOS |
 | Map Editor | Tiled |
-| Art Tools | SpriteFusion, Photoshop |
+| Art Tools | SpriteFusion, Photoshop, Krita |
 | Map Format | TMX (Tiled XML) |
 | Game Loop | Fixed Timestep |
 | Version Control | Git, GitHub |
@@ -102,8 +92,8 @@ The executable will be generated in the `build` folder.
 
 For detailed information about the game's design, mechanics, and architecture:
 
-- 📘 **[Game Design Document](docs/documentation/GDD.md)** - Full game design specification
-- 🗺️ **[Roadmap](docs/documentation/ROADMAP.md)** - Planned features and progress tracking
+- **[Game Design Document](docs/GDD.md)** - Full game design specification
+- **[Roadmap](docs/ROADMAP.md)** - Planned features and progress tracking
 
 ## Generating API Docs (Doxygen)
 
